@@ -39,7 +39,7 @@ beforeEach(() => {
     Promise.resolve({
       ok: true,
       json: () => Promise.resolve(
-        String(url).includes('events.json') ? events : String(url).includes('ranking-history.json') ? rankingHistory : ranking
+        String(url).includes('events') ? events : String(url).includes('ranking-history') ? rankingHistory : ranking
       ),
     })
   );

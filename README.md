@@ -27,12 +27,27 @@ Projeto de Business Intelligence para acompanhar o circuito profissional de tên
 
 ## Executar o dashboard
 
-Em dois terminais, execute:
+Na primeira execução, prepare o ambiente Python:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+```
+
+Depois, use três terminais. No primeiro, inicie a API:
+
+```bash
+.venv/bin/python -m uvicorn backend.app:app --reload
+```
+
+No segundo, inicie o dashboard:
 
 ```bash
 cd tennis-dashboard
 npm start
 ```
+
+No terceiro, mantenha o coletor ao vivo:
 
 ```bash
 python3 src/get_live_matches.py --watch
@@ -41,3 +56,6 @@ python3 src/get_live_matches.py --watch
 O coletor atualiza torneios e placares a cada 60 segundos, e o dashboard busca o
 novo arquivo automaticamente no mesmo intervalo. Para atualizar rankings e eventos
 uma única vez, execute `python3 etl_update.py`.
+
+A API roda em `http://127.0.0.1:8000`. A documentação interativa fica disponível
+em `http://127.0.0.1:8000/docs`.

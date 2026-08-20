@@ -44,6 +44,18 @@ function setScore(sets = []) {
   return sets.map((set) => set.value).join("  ") || "—";
 }
 
+async function fetchJsonWithFallback(apiUrl, staticUrl) {
+  try {
+    const response = await fetch(apiUrl);
+    if (response.ok) return response.json();
+  } catch {
+    // O modo local sem backend continua disponível pelos arquivos gerados pelo ETL.
+  }
+  const fallback = await fetch(staticUrl);
+  if (!fallback.ok) throw new Error("Dados indisponíveis.");
+  return fallback.json();
+}
+
 function competitorForPlayer(match, player) {
   const name = normalizeSearchValue(player?.player);
   return match.competitors.find(
@@ -121,20 +133,13 @@ function App() {
   });
 
   useEffect(() => {
-    fetch("/data/rankings.json")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Arquivo de ranking não encontrado. Rode o ETL primeiro.");
-        }
-        return response.json();
-      })
+    fetchJsonWithFallback("/api/rankings", "/data/rankings.json")
       .then(setPayload)
       .catch((err) => setError(err.message));
   }, []);
 
   useEffect(() => {
-    fetch("/data/ranking-history.json")
-      .then((response) => response.ok ? response.json() : null)
+    fetchJsonWithFallback("/api/ranking-history", "/data/ranking-history.json")
       .then(setRankingHistory)
       .catch(() => setRankingHistory(null));
   }, []);
@@ -161,11 +166,8 @@ function App() {
   useEffect(() => {
     let active = true;
     const loadEvents = () => {
-      fetch(`/data/events.json?ts=${Date.now()}`)
-        .then((response) => {
-          if (!response.ok) throw new Error("Eventos ainda não foram gerados pelo ETL.");
-          return response.json();
-        })
+      const timestamp = Date.now();
+      fetchJsonWithFallback(`/api/events?ts=${timestamp}`, `/data/events.json?ts=${timestamp}`)
         .then((data) => active && setEvents(data))
         .catch(() => active && setEvents(null));
     };

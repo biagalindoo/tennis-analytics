@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T16:53:58.500862+00:00",
+  "generatedAt": "2026-08-20T17:02:13.816362+00:00",
   "source": "ESPN Tennis Scoreboard",
   "refreshSeconds": 60,
   "tournaments": [
@@ -41,7 +41,7 @@
           "winner": false,
           "sets": [
             {
-              "value": 1,
+              "value": 2,
               "tiebreak": null,
               "winner": false
             }
@@ -56,7 +56,7 @@
           "winner": false,
           "sets": [
             {
-              "value": 0,
+              "value": 2,
               "tiebreak": null,
               "winner": false
             }
@@ -71,10 +71,10 @@
       "tour": "ATP",
       "discipline": "Men's Doubles",
       "round": "Round 2",
-      "date": "2026-08-20T16:55Z",
+      "date": "2026-08-20T17:00Z",
       "state": "pre",
       "status": "Scheduled",
-      "detail": "Thu, August 20th at 12:55 PM EDT",
+      "detail": "Thu, August 20th at 1:00 PM EDT",
       "venue": "Cincinnati, USA",
       "court": "Tony Trabert Stadium 3",
       "competitors": [
@@ -105,10 +105,10 @@
       "tour": "WTA",
       "discipline": "Women's Singles",
       "round": "Quarterfinal",
-      "date": "2026-08-20T17:00Z",
+      "date": "2026-08-20T17:05Z",
       "state": "pre",
       "status": "Scheduled",
-      "detail": "Thu, August 20th at 1:00 PM EDT",
+      "detail": "Thu, August 20th at 1:05 PM EDT",
       "venue": "Cincinnati, USA",
       "court": "P&G Stadium Court",
       "competitors": [
