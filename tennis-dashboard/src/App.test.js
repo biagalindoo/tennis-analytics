@@ -83,3 +83,30 @@ test('opens match details and saves a favorite', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Alternar favorito' }));
   expect(JSON.parse(window.localStorage.getItem('favoriteMatchIds'))).toEqual(['match-1']);
 });
+
+test('opens a player profile with ranking, matches and favorite state', async () => {
+  render(<App />);
+  const playerNames = await screen.findAllByText('Jannik Sinner');
+
+  fireEvent.click(playerNames[0]);
+
+  expect(screen.getByRole('dialog', { name: 'Jannik Sinner' })).toBeInTheDocument();
+  expect(screen.getAllByText('#1')).toHaveLength(2);
+  expect(screen.getByText('vs. Carlos Alcaraz')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Alternar jogador favorito' }));
+  expect(JSON.parse(window.localStorage.getItem('favoritePlayerIds'))).toEqual(['1']);
+});
+
+test('compares two ranked players and shows their head-to-head match', async () => {
+  render(<App />);
+  await screen.findAllByText('Jannik Sinner');
+
+  fireEvent.click(screen.getByRole('button', { name: 'Comparar' }));
+
+  expect(screen.getByText('Comparação ATP')).toBeInTheDocument();
+  expect(screen.getByLabelText('Jogador 1')).toHaveValue('1');
+  expect(screen.getByLabelText('Jogador 2')).toHaveValue('2');
+  expect(screen.getByText('Jannik Sinner × Carlos Alcaraz')).toBeInTheDocument();
+  expect(screen.getByText('1 encontrados')).toBeInTheDocument();
+});

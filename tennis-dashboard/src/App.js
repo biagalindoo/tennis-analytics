@@ -44,6 +44,24 @@ function setScore(sets = []) {
   return sets.map((set) => set.value).join("  ") || "—";
 }
 
+function competitorForPlayer(match, player) {
+  const name = normalizeSearchValue(player?.player);
+  return match.competitors.find(
+    (competitor) => competitor.id === player?.athleteId || normalizeSearchValue(competitor.name).includes(name)
+  );
+}
+
+function playerMatchSummary(matches, player) {
+  const related = matches.filter((match) => competitorForPlayer(match, player));
+  const finished = related.filter((match) => match.state === "post");
+  return {
+    played: finished.length,
+    wins: finished.filter((match) => competitorForPlayer(match, player)?.winner).length,
+    live: related.filter((match) => match.state === "in").length,
+    upcoming: related.filter((match) => match.state === "pre").length,
+  };
+}
+
 function App() {
   const [payload, setPayload] = useState(null);
   const [error, setError] = useState("");
@@ -53,9 +71,18 @@ function App() {
   const [events, setEvents] = useState(null);
   const [matchFilter, setMatchFilter] = useState("all");
   const [selectedMatchId, setSelectedMatchId] = useState(null);
+  const [selectedPlayerId, setSelectedPlayerId] = useState(null);
+  const [comparePlayerIds, setComparePlayerIds] = useState(["", ""]);
   const [favoriteMatchIds, setFavoriteMatchIds] = useState(() => {
     try {
       return JSON.parse(window.localStorage.getItem("favoriteMatchIds")) || [];
+    } catch {
+      return [];
+    }
+  });
+  const [favoritePlayerIds, setFavoritePlayerIds] = useState(() => {
+    try {
+      return JSON.parse(window.localStorage.getItem("favoritePlayerIds")) || [];
     } catch {
       return [];
     }
@@ -78,11 +105,19 @@ function App() {
   }, [favoriteMatchIds]);
 
   useEffect(() => {
-    if (!selectedMatchId) return undefined;
-    const closeOnEscape = (event) => event.key === "Escape" && setSelectedMatchId(null);
+    window.localStorage.setItem("favoritePlayerIds", JSON.stringify(favoritePlayerIds));
+  }, [favoritePlayerIds]);
+
+  useEffect(() => {
+    if (!selectedMatchId && !selectedPlayerId) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key !== "Escape") return;
+      setSelectedMatchId(null);
+      setSelectedPlayerId(null);
+    };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [selectedMatchId]);
+  }, [selectedMatchId, selectedPlayerId]);
 
   useEffect(() => {
     let active = true;
@@ -123,9 +158,34 @@ function App() {
     return list.filter((match) => match.state === matchFilter).slice(0, 40);
   }, [events, tour, matchFilter, favoriteMatchIds]);
   const selectedMatch = (events?.matches || []).find((match) => match.id === selectedMatchId);
+  const allPlayers = Object.values(payload?.tours || {}).flatMap((item) => item.players || []);
+  const selectedPlayer = allPlayers.find((player) => player.athleteId === selectedPlayerId);
+  const selectedPlayerMatches = useMemo(() => {
+    if (!selectedPlayer) return [];
+    const playerName = normalizeSearchValue(selectedPlayer.player);
+    return (events?.matches || []).filter((match) =>
+      match.competitors.some((competitor) =>
+        competitor.id === selectedPlayer.athleteId || normalizeSearchValue(competitor.name).includes(playerName)
+      )
+    ).slice(0, 8);
+  }, [events, selectedPlayer]);
+  const comparePlayers = [
+    tourData?.players?.find((player) => player.athleteId === comparePlayerIds[0]) || tourData?.players?.[0],
+    tourData?.players?.find((player) => player.athleteId === comparePlayerIds[1]) || tourData?.players?.[1],
+  ];
+  const currentTourMatches = (events?.matches || []).filter((match) => match.tour === tour);
+  const compareSummaries = comparePlayers.map((player) => playerMatchSummary(currentTourMatches, player));
+  const headToHead = currentTourMatches.filter(
+    (match) => comparePlayers.every((player) => competitorForPlayer(match, player))
+  );
   const toggleFavorite = (matchId) => {
     setFavoriteMatchIds((current) =>
       current.includes(matchId) ? current.filter((id) => id !== matchId) : [...current, matchId]
+    );
+  };
+  const toggleFavoritePlayer = (playerId) => {
+    setFavoritePlayerIds((current) =>
+      current.includes(playerId) ? current.filter((id) => id !== playerId) : [...current, playerId]
     );
   };
   const liveCount = (events?.matches || []).filter(
@@ -137,7 +197,7 @@ function App() {
       <header className="hero">
         <div>
           <p className="eyebrow">Tennis Analytics</p>
-          <h1>Ranking mundial</h1>
+          <h1>{view === "ranking" ? "Ranking mundial" : view === "matches" ? "Torneios e partidas" : "Comparar jogadores"}</h1>
           <p className="lede">
             ATP e WTA atualizados a partir da fonte oficial via ESPN.
           </p>
@@ -153,6 +213,7 @@ function App() {
         <button className={view === "matches" ? "active" : ""} onClick={() => setView("matches")}>
           Torneios e partidas {liveCount > 0 && <span className="live-pill">{liveCount} ao vivo</span>}
         </button>
+        <button className={view === "compare" ? "active" : ""} onClick={() => setView("compare")}>Comparar</button>
       </nav>
 
       <section className="toolbar">
@@ -188,7 +249,7 @@ function App() {
         <>
           <section className="podium">
             {featuredPlayers.map((player) => (
-              <article key={player.athleteId} className={`card rank-${player.rank}`}>
+              <article key={player.athleteId} className={`card rank-${player.rank} player-link`} onClick={() => setSelectedPlayerId(player.athleteId)} tabIndex="0" onKeyDown={(event) => event.key === "Enter" && setSelectedPlayerId(player.athleteId)}>
                 <span className="rank">#{player.rank}</span>
                 {player.headshot ? (
                   <img src={player.headshot} alt={player.player} />
@@ -221,7 +282,7 @@ function App() {
                 {players.map((player) => (
                   <tr key={player.athleteId}>
                     <td className="pos">{player.rank}</td>
-                    <td className="player">
+                    <td className="player player-link" onClick={() => setSelectedPlayerId(player.athleteId)}>
                       {player.headshot ? (
                         <img src={player.headshot} alt="" />
                       ) : (
@@ -296,6 +357,65 @@ function App() {
         </section>
       )}
 
+      {view === "compare" && tourData && (
+        <section className="compare-view">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Lado a lado</p>
+              <h2>Comparação {tour}</h2>
+            </div>
+            <span className="events-updated">Dados do ranking e torneio atual</span>
+          </div>
+
+          <div className="compare-selectors">
+            {[0, 1].map((index) => (
+              <label key={index}>
+                <span>Jogador {index + 1}</span>
+                <select value={comparePlayers[index]?.athleteId || ""} onChange={(event) => setComparePlayerIds((current) => current.map((id, position) => position === index ? event.target.value : id))}>
+                  {(tourData.players || []).map((player) => <option key={player.athleteId} value={player.athleteId}>{player.rank}. {player.player}</option>)}
+                </select>
+              </label>
+            ))}
+          </div>
+
+          <div className="compare-players">
+            {comparePlayers.map((player, index) => player && (
+              <article className="compare-player-card" key={`${index}-${player.athleteId}`}>
+                {player.headshot ? <img src={player.headshot} alt={player.player} /> : <div className="compare-avatar">{player.player.slice(0, 1)}</div>}
+                <div>
+                  <span className="compare-rank">#{player.rank}</span>
+                  <h3>{player.player}</h3>
+                  <p>{player.flag && <img src={player.flag} alt="" />} {player.country || player.countryCode}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="comparison-table">
+            {[
+              ["Ranking", `#${comparePlayers[0]?.rank ?? "—"}`, `#${comparePlayers[1]?.rank ?? "—"}`, "lower"],
+              ["Pontos", formatPoints(comparePlayers[0]?.points), formatPoints(comparePlayers[1]?.points), "higher"],
+              ["Idade", comparePlayers[0]?.age ?? "—", comparePlayers[1]?.age ?? "—", null],
+              ["Variação", comparePlayers[0]?.trend || "—", comparePlayers[1]?.trend || "—", null],
+              ["Vitórias no feed", compareSummaries[0].wins, compareSummaries[1].wins, "higher"],
+              ["Partidas finalizadas", compareSummaries[0].played, compareSummaries[1].played, null],
+              ["Próximas partidas", compareSummaries[0].upcoming, compareSummaries[1].upcoming, null],
+            ].map(([label, left, right, preference]) => {
+              const leftNumber = Number(String(left).replace(/[^0-9.-]/g, ""));
+              const rightNumber = Number(String(right).replace(/[^0-9.-]/g, ""));
+              const leftBest = preference && leftNumber !== rightNumber && (preference === "higher" ? leftNumber > rightNumber : leftNumber < rightNumber);
+              const rightBest = preference && leftNumber !== rightNumber && !leftBest;
+              return <div className="comparison-row" key={label}><strong className={leftBest ? "best" : ""}>{left}</strong><span>{label}</span><strong className={rightBest ? "best" : ""}>{right}</strong></div>;
+            })}
+          </div>
+
+          <div className="head-to-head">
+            <div className="profile-section-title"><h3>Confrontos no feed atual</h3><span>{headToHead.length} encontrados</span></div>
+            {headToHead.length === 0 ? <p className="empty profile-empty">Nenhum confronto direto disponível no torneio atual.</p> : headToHead.map((match) => <button className="profile-match" key={match.id} onClick={() => setSelectedMatchId(match.id)}><span><small>{match.tournament} · {match.round}</small><strong>{match.competitors.map((item) => item.name).join(" × ")}</strong></span><span className="profile-result">{match.state === "post" ? "FINAL" : match.state === "in" ? "AO VIVO" : formatMatchDate(match.date)}</span></button>)}
+          </div>
+        </section>
+      )}
+
       {selectedMatch && (
         <div className="modal-backdrop" role="presentation" onMouseDown={() => setSelectedMatchId(null)}>
           <section className="match-modal" role="dialog" aria-modal="true" aria-labelledby="match-title" onMouseDown={(event) => event.stopPropagation()}>
@@ -329,6 +449,52 @@ function App() {
               <div><dt>Local</dt><dd>{selectedMatch.venue || "—"}</dd></div>
               <div><dt>Quadra</dt><dd>{selectedMatch.court || "A definir"}</dd></div>
             </dl>
+          </section>
+        </div>
+      )}
+
+      {selectedPlayer && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={() => setSelectedPlayerId(null)}>
+          <section className="match-modal player-modal" role="dialog" aria-modal="true" aria-labelledby="player-title" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="modal-header player-profile-header">
+              <div className="profile-identity">
+                {selectedPlayer.headshot ? <img src={selectedPlayer.headshot} alt={selectedPlayer.player} /> : <div className="profile-avatar">{selectedPlayer.player.slice(0, 1)}</div>}
+                <div>
+                  <p className="eyebrow">Perfil do jogador</p>
+                  <h2 id="player-title">{selectedPlayer.player}</h2>
+                  <p className="profile-country">{selectedPlayer.flag && <img src={selectedPlayer.flag} alt="" />} {selectedPlayer.country || selectedPlayer.countryCode}</p>
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button className={favoritePlayerIds.includes(selectedPlayer.athleteId) ? "favorite-button active" : "favorite-button"} onClick={() => toggleFavoritePlayer(selectedPlayer.athleteId)} aria-label="Alternar jogador favorito">{favoritePlayerIds.includes(selectedPlayer.athleteId) ? "★" : "☆"}</button>
+                <button className="close-button" onClick={() => setSelectedPlayerId(null)} aria-label="Fechar perfil">×</button>
+              </div>
+            </div>
+
+            <div className="profile-stats">
+              <div><span>Ranking</span><strong>#{selectedPlayer.rank}</strong></div>
+              <div><span>Pontos</span><strong>{formatPoints(selectedPlayer.points)}</strong></div>
+              <div><span>Variação</span><strong className={trendClass(selectedPlayer.trend)}>{selectedPlayer.trend}</strong></div>
+              <div><span>Idade</span><strong>{selectedPlayer.age ?? "—"}</strong></div>
+            </div>
+
+            <div className="profile-matches">
+              <div className="profile-section-title">
+                <h3>Partidas no torneio atual</h3>
+                <span>{selectedPlayerMatches.length} encontradas</span>
+              </div>
+              {selectedPlayerMatches.length === 0 && <p className="empty profile-empty">Nenhuma partida deste jogador no feed atual.</p>}
+              {selectedPlayerMatches.map((match) => {
+                const opponent = match.competitors.find((competitor) => !normalizeSearchValue(competitor.name).includes(normalizeSearchValue(selectedPlayer.player)));
+                const playerRow = match.competitors.find((competitor) => normalizeSearchValue(competitor.name).includes(normalizeSearchValue(selectedPlayer.player)));
+                return (
+                  <button className="profile-match" key={match.id} onClick={() => { setSelectedPlayerId(null); setSelectedMatchId(match.id); }}>
+                    <span><small>{match.tournament} · {match.round}</small><strong>vs. {opponent?.name || "Adversário a definir"}</strong></span>
+                    <span className={playerRow?.winner ? "profile-result win" : match.state === "post" ? "profile-result loss" : "profile-result"}>{match.state === "in" ? "AO VIVO" : match.state === "pre" ? formatMatchDate(match.date) : playerRow?.winner ? "VITÓRIA" : "DERROTA"}</span>
+                  </button>
+                );
+              })}
+            </div>
           </section>
         </div>
       )}
