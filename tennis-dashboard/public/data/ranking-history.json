@@ -1,0 +1,3605 @@
+{
+  "generatedAt": "2026-08-20T16:52:31.139901+00:00",
+  "players": {
+    "ATP:3623": {
+      "tour": "ATP",
+      "athleteId": "3623",
+      "player": "Jannik Sinner",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 1,
+          "points": 13450
+        }
+      ]
+    },
+    "ATP:3782": {
+      "tour": "ATP",
+      "athleteId": "3782",
+      "player": "Carlos Alcaraz",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 2,
+          "points": 8160
+        }
+      ]
+    },
+    "ATP:2375": {
+      "tour": "ATP",
+      "athleteId": "2375",
+      "player": "Alexander Zverev",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 3,
+          "points": 8090
+        }
+      ]
+    },
+    "ATP:3209": {
+      "tour": "ATP",
+      "athleteId": "3209",
+      "player": "Felix Auger-Aliassime",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 4,
+          "points": 4740
+        }
+      ]
+    },
+    "ATP:296": {
+      "tour": "ATP",
+      "athleteId": "296",
+      "player": "Novak Djokovic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 5,
+          "points": 3760
+        }
+      ]
+    },
+    "ATP:9250": {
+      "tour": "ATP",
+      "athleteId": "9250",
+      "player": "Ben Shelton",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 6,
+          "points": 3670
+        }
+      ]
+    },
+    "ATP:2383": {
+      "tour": "ATP",
+      "athleteId": "2383",
+      "player": "Daniil Medvedev",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 7,
+          "points": 3580
+        }
+      ]
+    },
+    "ATP:2651": {
+      "tour": "ATP",
+      "athleteId": "2651",
+      "player": "Alex de Minaur",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 8,
+          "points": 3560
+        }
+      ]
+    },
+    "ATP:2946": {
+      "tour": "ATP",
+      "athleteId": "2946",
+      "player": "Taylor Fritz",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 9,
+          "points": 3375
+        }
+      ]
+    },
+    "ATP:7602": {
+      "tour": "ATP",
+      "athleteId": "7602",
+      "player": "Flavio Cobolli",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 10,
+          "points": 3330
+        }
+      ]
+    },
+    "ATP:12657": {
+      "tour": "ATP",
+      "athleteId": "12657",
+      "player": "Rafael Jodar",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 11,
+          "points": 2621
+        }
+      ]
+    },
+    "ATP:10386": {
+      "tour": "ATP",
+      "athleteId": "10386",
+      "player": "Learner Tien",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 12,
+          "points": 2545
+        }
+      ]
+    },
+    "ATP:2865": {
+      "tour": "ATP",
+      "athleteId": "2865",
+      "player": "Alexander Bublik",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 13,
+          "points": 2525
+        }
+      ]
+    },
+    "ATP:3754": {
+      "tour": "ATP",
+      "athleteId": "3754",
+      "player": "Jiri Lehecka",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 14,
+          "points": 2470
+        }
+      ]
+    },
+    "ATP:3764": {
+      "tour": "ATP",
+      "athleteId": "3764",
+      "player": "Lorenzo Musetti",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 15,
+          "points": 2415
+        }
+      ]
+    },
+    "ATP:10319": {
+      "tour": "ATP",
+      "athleteId": "10319",
+      "player": "Jakub Mensik",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 16,
+          "points": 2395
+        }
+      ]
+    },
+    "ATP:2989": {
+      "tour": "ATP",
+      "athleteId": "2989",
+      "player": "Casper Ruud",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 17,
+          "points": 2385
+        }
+      ]
+    },
+    "ATP:2642": {
+      "tour": "ATP",
+      "athleteId": "2642",
+      "player": "Andrey Rublev",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 18,
+          "points": 2230
+        }
+      ]
+    },
+    "ATP:9376": {
+      "tour": "ATP",
+      "athleteId": "9376",
+      "player": "Valentin Vacherot",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 19,
+          "points": 2186
+        }
+      ]
+    },
+    "ATP:7833": {
+      "tour": "ATP",
+      "athleteId": "7833",
+      "player": "Luciano Darderi",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 20,
+          "points": 2175
+        }
+      ]
+    },
+    "ATP:10052": {
+      "tour": "ATP",
+      "athleteId": "10052",
+      "player": "Arthur Fils",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 21,
+          "points": 2140
+        }
+      ]
+    },
+    "ATP:3774": {
+      "tour": "ATP",
+      "athleteId": "3774",
+      "player": "Brandon Nakashima",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 22,
+          "points": 2135
+        }
+      ]
+    },
+    "ATP:2708": {
+      "tour": "ATP",
+      "athleteId": "2708",
+      "player": "Frances Tiafoe",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 23,
+          "points": 2130
+        }
+      ]
+    },
+    "ATP:2964": {
+      "tour": "ATP",
+      "athleteId": "2964",
+      "player": "Tommy Paul",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 24,
+          "points": 2075
+        }
+      ]
+    },
+    "ATP:3700": {
+      "tour": "ATP",
+      "athleteId": "3700",
+      "player": "Francisco Cerundolo",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 25,
+          "points": 1970
+        }
+      ]
+    },
+    "ATP:11745": {
+      "tour": "ATP",
+      "athleteId": "11745",
+      "player": "Joao Fonseca",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 26,
+          "points": 1800
+        }
+      ]
+    },
+    "ATP:3212": {
+      "tour": "ATP",
+      "athleteId": "3212",
+      "player": "Alejandro Davidovich Fokina",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 27,
+          "points": 1780
+        }
+      ]
+    },
+    "ATP:3511": {
+      "tour": "ATP",
+      "athleteId": "3511",
+      "player": "Arthur Rinderknech",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 28,
+          "points": 1723
+        }
+      ]
+    },
+    "ATP:2970": {
+      "tour": "ATP",
+      "athleteId": "2970",
+      "player": "Alejandro Tabilo",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 29,
+          "points": 1688
+        }
+      ]
+    },
+    "ATP:3085": {
+      "tour": "ATP",
+      "athleteId": "3085",
+      "player": "Ugo Humbert",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 30,
+          "points": 1585
+        }
+      ]
+    },
+    "ATP:3739": {
+      "tour": "ATP",
+      "athleteId": "3739",
+      "player": "Tomas Martin Etcheverry",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 31,
+          "points": 1470
+        }
+      ]
+    },
+    "ATP:11757": {
+      "tour": "ATP",
+      "athleteId": "11757",
+      "player": "Alexander Blockx",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 32,
+          "points": 1396
+        }
+      ]
+    },
+    "ATP:3356": {
+      "tour": "ATP",
+      "athleteId": "3356",
+      "player": "Zizou Bergs",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 33,
+          "points": 1365
+        }
+      ]
+    },
+    "ATP:3793": {
+      "tour": "ATP",
+      "athleteId": "3793",
+      "player": "Matteo Arnaldi",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 34,
+          "points": 1349
+        }
+      ]
+    },
+    "ATP:2366": {
+      "tour": "ATP",
+      "athleteId": "2366",
+      "player": "Cameron Norrie",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 35,
+          "points": 1345
+        }
+      ]
+    },
+    "ATP:11226": {
+      "tour": "ATP",
+      "athleteId": "11226",
+      "player": "Ignacio Buse",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 36,
+          "points": 1335
+        }
+      ]
+    },
+    "ATP:8621": {
+      "tour": "ATP",
+      "athleteId": "8621",
+      "player": "Arthur Fery",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 37,
+          "points": 1285
+        }
+      ]
+    },
+    "ATP:11222": {
+      "tour": "ATP",
+      "athleteId": "11222",
+      "player": "Raphael Collignon",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 38,
+          "points": 1222
+        }
+      ]
+    },
+    "ATP:2367": {
+      "tour": "ATP",
+      "athleteId": "2367",
+      "player": "Karen Khachanov",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 39,
+          "points": 1140
+        }
+      ]
+    },
+    "ATP:10239": {
+      "tour": "ATP",
+      "athleteId": "10239",
+      "player": "Daniel Merida",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 40,
+          "points": 1117
+        }
+      ]
+    },
+    "ATP:11400": {
+      "tour": "ATP",
+      "athleteId": "11400",
+      "player": "Alex Michelsen",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 41,
+          "points": 1090
+        }
+      ]
+    },
+    "ATP:2622": {
+      "tour": "ATP",
+      "athleteId": "2622",
+      "player": "Matteo Berrettini",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 42,
+          "points": 1085
+        }
+      ]
+    },
+    "ATP:2337": {
+      "tour": "ATP",
+      "athleteId": "2337",
+      "player": "Jan-Lennard Struff",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 43,
+          "points": 1069
+        }
+      ]
+    },
+    "ATP:9992": {
+      "tour": "ATP",
+      "athleteId": "9992",
+      "player": "Mariano Navone",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 44,
+          "points": 1066
+        }
+      ]
+    },
+    "ATP:10638": {
+      "tour": "ATP",
+      "athleteId": "10638",
+      "player": "Terence Atmane",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 45,
+          "points": 1057
+        }
+      ]
+    },
+    "ATP:2709": {
+      "tour": "ATP",
+      "athleteId": "2709",
+      "player": "Jaume Munar",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 46,
+          "points": 1050
+        }
+      ]
+    },
+    "ATP:4115": {
+      "tour": "ATP",
+      "athleteId": "4115",
+      "player": "Nuno Borges",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 47,
+          "points": 1045
+        }
+      ]
+    },
+    "ATP:2860": {
+      "tour": "ATP",
+      "athleteId": "2860",
+      "player": "Denis Shapovalov",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 48,
+          "points": 1045
+        }
+      ]
+    },
+    "ATP:2869": {
+      "tour": "ATP",
+      "athleteId": "2869",
+      "player": "Stefanos Tsitsipas",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 49,
+          "points": 1020
+        }
+      ]
+    },
+    "ATP:4010": {
+      "tour": "ATP",
+      "athleteId": "4010",
+      "player": "Thiago Agustin Tirante",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 50,
+          "points": 1011
+        }
+      ]
+    },
+    "ATP:4008": {
+      "tour": "ATP",
+      "athleteId": "4008",
+      "player": "Juan Manuel Cerundolo",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 51,
+          "points": 1006
+        }
+      ]
+    },
+    "ATP:1266": {
+      "tour": "ATP",
+      "athleteId": "1266",
+      "player": "Adrian Mannarino",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 52,
+          "points": 1005
+        }
+      ]
+    },
+    "ATP:3340": {
+      "tour": "ATP",
+      "athleteId": "3340",
+      "player": "Sebastian Baez",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 53,
+          "points": 1005
+        }
+      ]
+    },
+    "ATP:8814": {
+      "tour": "ATP",
+      "athleteId": "8814",
+      "player": "Luca Van Assche",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 54,
+          "points": 1001
+        }
+      ]
+    },
+    "ATP:3322": {
+      "tour": "ATP",
+      "athleteId": "3322",
+      "player": "Yannick Hanfmann",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 55,
+          "points": 986
+        }
+      ]
+    },
+    "ATP:3319": {
+      "tour": "ATP",
+      "athleteId": "3319",
+      "player": "Tallon Griekspoor",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 56,
+          "points": 985
+        }
+      ]
+    },
+    "ATP:2362": {
+      "tour": "ATP",
+      "athleteId": "2362",
+      "player": "Quentin Halys",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 57,
+          "points": 980
+        }
+      ]
+    },
+    "ATP:11383": {
+      "tour": "ATP",
+      "athleteId": "11383",
+      "player": "Ethan Quinn",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 58,
+          "points": 979
+        }
+      ]
+    },
+    "ATP:3310": {
+      "tour": "ATP",
+      "athleteId": "3310",
+      "player": "Botic Van De Zandschulp",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 59,
+          "points": 969
+        }
+      ]
+    },
+    "ATP:2886": {
+      "tour": "ATP",
+      "athleteId": "2886",
+      "player": "Corentin Moutet",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 60,
+          "points": 965
+        }
+      ]
+    },
+    "ATP:4011": {
+      "tour": "ATP",
+      "athleteId": "4011",
+      "player": "Roman Andres Burruchaga",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 61,
+          "points": 962
+        }
+      ]
+    },
+    "ATP:3811": {
+      "tour": "ATP",
+      "athleteId": "3811",
+      "player": "Tomas Machac",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 62,
+          "points": 960
+        }
+      ]
+    },
+    "ATP:9213": {
+      "tour": "ATP",
+      "athleteId": "9213",
+      "player": "Fabian Marozsan",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 63,
+          "points": 950
+        }
+      ]
+    },
+    "ATP:3368": {
+      "tour": "ATP",
+      "athleteId": "3368",
+      "player": "Sebastian Korda",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 64,
+          "points": 950
+        }
+      ]
+    },
+    "ATP:3203": {
+      "tour": "ATP",
+      "athleteId": "3203",
+      "player": "Daniel Altmaier",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 65,
+          "points": 944
+        }
+      ]
+    },
+    "ATP:2874": {
+      "tour": "ATP",
+      "athleteId": "2874",
+      "player": "Miomir Kecmanovic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 66,
+          "points": 930
+        }
+      ]
+    },
+    "ATP:11640": {
+      "tour": "ATP",
+      "athleteId": "11640",
+      "player": "Martin Landaluce",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 67,
+          "points": 922
+        }
+      ]
+    },
+    "ATP:2416": {
+      "tour": "ATP",
+      "athleteId": "2416",
+      "player": "Kamil Majchrzak",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 68,
+          "points": 917
+        }
+      ]
+    },
+    "ATP:2726": {
+      "tour": "ATP",
+      "athleteId": "2726",
+      "player": "Hubert Hurkacz",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 69,
+          "points": 915
+        }
+      ]
+    },
+    "ATP:11396": {
+      "tour": "ATP",
+      "athleteId": "11396",
+      "player": "Adolfo Daniel Vallejo",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 70,
+          "points": 914
+        }
+      ]
+    },
+    "ATP:3809": {
+      "tour": "ATP",
+      "athleteId": "3809",
+      "player": "Vit Kopriva",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 71,
+          "points": 886
+        }
+      ]
+    },
+    "ATP:1590": {
+      "tour": "ATP",
+      "athleteId": "1590",
+      "player": "Pablo Carreno Busta",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 72,
+          "points": 885
+        }
+      ]
+    },
+    "ATP:8325": {
+      "tour": "ATP",
+      "athleteId": "8325",
+      "player": "Hamad Medjedovic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 73,
+          "points": 854
+        }
+      ]
+    },
+    "ATP:3621": {
+      "tour": "ATP",
+      "athleteId": "3621",
+      "player": "Jenson Brooksby",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 74,
+          "points": 840
+        }
+      ]
+    },
+    "ATP:2635": {
+      "tour": "ATP",
+      "athleteId": "2635",
+      "player": "Alex Molcan",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 75,
+          "points": 791
+        }
+      ]
+    },
+    "ATP:3666": {
+      "tour": "ATP",
+      "athleteId": "3666",
+      "player": "Camilo Ugo Carabelli",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 76,
+          "points": 790
+        }
+      ]
+    },
+    "ATP:2720": {
+      "tour": "ATP",
+      "athleteId": "2720",
+      "player": "Jan Choinski",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 77,
+          "points": 770
+        }
+      ]
+    },
+    "ATP:4022": {
+      "tour": "ATP",
+      "athleteId": "4022",
+      "player": "Valentin Royer",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 78,
+          "points": 768
+        }
+      ]
+    },
+    "ATP:10219": {
+      "tour": "ATP",
+      "athleteId": "10219",
+      "player": "Jaime Faria",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 79,
+          "points": 762
+        }
+      ]
+    },
+    "ATP:464": {
+      "tour": "ATP",
+      "athleteId": "464",
+      "player": "Marin Cilic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 80,
+          "points": 751
+        }
+      ]
+    },
+    "ATP:10153": {
+      "tour": "ATP",
+      "athleteId": "10153",
+      "player": "Mattia Bellucci",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 81,
+          "points": 751
+        }
+      ]
+    },
+    "ATP:1862": {
+      "tour": "ATP",
+      "athleteId": "1862",
+      "player": "Marton Fucsovics",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 82,
+          "points": 750
+        }
+      ]
+    },
+    "ATP:1993": {
+      "tour": "ATP",
+      "athleteId": "1993",
+      "player": "Marcos Giron",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 83,
+          "points": 750
+        }
+      ]
+    },
+    "ATP:3953": {
+      "tour": "ATP",
+      "athleteId": "3953",
+      "player": "Zachary Svajda",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 84,
+          "points": 749
+        }
+      ]
+    },
+    "ATP:10427": {
+      "tour": "ATP",
+      "athleteId": "10427",
+      "player": "Arthur Gea",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 85,
+          "points": 744
+        }
+      ]
+    },
+    "ATP:1857": {
+      "tour": "ATP",
+      "athleteId": "1857",
+      "player": "James Duckworth",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 86,
+          "points": 743
+        }
+      ]
+    },
+    "ATP:3694": {
+      "tour": "ATP",
+      "athleteId": "3694",
+      "player": "Facundo Diaz Acosta",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 87,
+          "points": 732
+        }
+      ]
+    },
+    "ATP:3052": {
+      "tour": "ATP",
+      "athleteId": "3052",
+      "player": "Lorenzo Sonego",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 88,
+          "points": 718
+        }
+      ]
+    },
+    "ATP:8710": {
+      "tour": "ATP",
+      "athleteId": "8710",
+      "player": "Aleksandr Shevchenko",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 89,
+          "points": 699
+        }
+      ]
+    },
+    "ATP:3935": {
+      "tour": "ATP",
+      "athleteId": "3935",
+      "player": "Sho Shimabukuro",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 90,
+          "points": 697
+        }
+      ]
+    },
+    "ATP:2278": {
+      "tour": "ATP",
+      "athleteId": "2278",
+      "player": "Marco Trungelliti",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 91,
+          "points": 693
+        }
+      ]
+    },
+    "ATP:8885": {
+      "tour": "ATP",
+      "athleteId": "8885",
+      "player": "Giovanni Mpetshi Perricard",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 92,
+          "points": 690
+        }
+      ]
+    },
+    "ATP:11398": {
+      "tour": "ATP",
+      "athleteId": "11398",
+      "player": "Chak Lam Coleman Wong",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 93,
+          "points": 680
+        }
+      ]
+    },
+    "ATP:10130": {
+      "tour": "ATP",
+      "athleteId": "10130",
+      "player": "Martin Damm",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 94,
+          "points": 677
+        }
+      ]
+    },
+    "ATP:3716": {
+      "tour": "ATP",
+      "athleteId": "3716",
+      "player": "Rinky Hijikata",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 95,
+          "points": 673
+        }
+      ]
+    },
+    "ATP:3849": {
+      "tour": "ATP",
+      "athleteId": "3849",
+      "player": "Aleksandar Kovacevic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 96,
+          "points": 673
+        }
+      ]
+    },
+    "ATP:3375": {
+      "tour": "ATP",
+      "athleteId": "3375",
+      "player": "Hugo Gaston",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 97,
+          "points": 672
+        }
+      ]
+    },
+    "ATP:3093": {
+      "tour": "ATP",
+      "athleteId": "3093",
+      "player": "Adam Walton",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 98,
+          "points": 670
+        }
+      ]
+    },
+    "ATP:3471": {
+      "tour": "ATP",
+      "athleteId": "3471",
+      "player": "Aleksandar Vukic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 99,
+          "points": 666
+        }
+      ]
+    },
+    "ATP:2355": {
+      "tour": "ATP",
+      "athleteId": "2355",
+      "player": "Benjamin Bonzi",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 100,
+          "points": 656
+        }
+      ]
+    },
+    "ATP:10105": {
+      "tour": "ATP",
+      "athleteId": "10105",
+      "player": "Dino Prizmic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 101,
+          "points": 652
+        }
+      ]
+    },
+    "ATP:3659": {
+      "tour": "ATP",
+      "athleteId": "3659",
+      "player": "Holger Rune",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 102,
+          "points": 650
+        }
+      ]
+    },
+    "ATP:2636": {
+      "tour": "ATP",
+      "athleteId": "2636",
+      "player": "Roman Safiullin",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 103,
+          "points": 648
+        }
+      ]
+    },
+    "ATP:1842": {
+      "tour": "ATP",
+      "athleteId": "1842",
+      "player": "Damir Dzumhur",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 104,
+          "points": 632
+        }
+      ]
+    },
+    "ATP:3885": {
+      "tour": "ATP",
+      "athleteId": "3885",
+      "player": "Gabriel Diallo",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 105,
+          "points": 625
+        }
+      ]
+    },
+    "ATP:3897": {
+      "tour": "ATP",
+      "athleteId": "3897",
+      "player": "Jesper de Jong",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 106,
+          "points": 618
+        }
+      ]
+    },
+    "ATP:11685": {
+      "tour": "ATP",
+      "athleteId": "11685",
+      "player": "Jacob Fearnley",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 107,
+          "points": 617
+        }
+      ]
+    },
+    "ATP:3772": {
+      "tour": "ATP",
+      "athleteId": "3772",
+      "player": "Emilio Nava",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 108,
+          "points": 604
+        }
+      ]
+    },
+    "ATP:10044": {
+      "tour": "ATP",
+      "athleteId": "10044",
+      "player": "Francisco Comesana",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 109,
+          "points": 603
+        }
+      ]
+    },
+    "ATP:12932": {
+      "tour": "ATP",
+      "athleteId": "12932",
+      "player": "Michael Zheng",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 110,
+          "points": 595
+        }
+      ]
+    },
+    "ATP:8136": {
+      "tour": "ATP",
+      "athleteId": "8136",
+      "player": "Titouan Droguet",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 111,
+          "points": 594
+        }
+      ]
+    },
+    "ATP:7608": {
+      "tour": "ATP",
+      "athleteId": "7608",
+      "player": "Shintaro Mochizuki",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 112,
+          "points": 577
+        }
+      ]
+    },
+    "ATP:10645": {
+      "tour": "ATP",
+      "athleteId": "10645",
+      "player": "Toby Samuel",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 113,
+          "points": 576
+        }
+      ]
+    },
+    "ATP:3812": {
+      "tour": "ATP",
+      "athleteId": "3812",
+      "player": "Dalibor Svrcina",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 114,
+          "points": 574
+        }
+      ]
+    },
+    "ATP:10958": {
+      "tour": "ATP",
+      "athleteId": "10958",
+      "player": "Patrick Kypson",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 115,
+          "points": 570
+        }
+      ]
+    },
+    "ATP:4099": {
+      "tour": "ATP",
+      "athleteId": "4099",
+      "player": "Otto Virtanen",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 116,
+          "points": 564
+        }
+      ]
+    },
+    "ATP:13158": {
+      "tour": "ATP",
+      "athleteId": "13158",
+      "player": "Eliot Spizzirri",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 117,
+          "points": 557
+        }
+      ]
+    },
+    "ATP:2875": {
+      "tour": "ATP",
+      "athleteId": "2875",
+      "player": "Wu Yibing",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 118,
+          "points": 553
+        }
+      ]
+    },
+    "ATP:7509": {
+      "tour": "ATP",
+      "athleteId": "7509",
+      "player": "Kyrian Jacquet",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 119,
+          "points": 551
+        }
+      ]
+    },
+    "ATP:11382": {
+      "tour": "ATP",
+      "athleteId": "11382",
+      "player": "Bu Yunchaokete",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 120,
+          "points": 546
+        }
+      ]
+    },
+    "ATP:3110": {
+      "tour": "ATP",
+      "athleteId": "3110",
+      "player": "Zsombor Piros",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 121,
+          "points": 542
+        }
+      ]
+    },
+    "ATP:3371": {
+      "tour": "ATP",
+      "athleteId": "3371",
+      "player": "Nicolas Mejia",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 122,
+          "points": 530
+        }
+      ]
+    },
+    "ATP:11755": {
+      "tour": "ATP",
+      "athleteId": "11755",
+      "player": "Vilius Gaubas",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 123,
+          "points": 523
+        }
+      ]
+    },
+    "ATP:4030": {
+      "tour": "ATP",
+      "athleteId": "4030",
+      "player": "Dane Sweeny",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 124,
+          "points": 518
+        }
+      ]
+    },
+    "ATP:264": {
+      "tour": "ATP",
+      "athleteId": "264",
+      "player": "Stan Wawrinka",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 125,
+          "points": 513
+        }
+      ]
+    },
+    "ATP:10248": {
+      "tour": "ATP",
+      "athleteId": "10248",
+      "player": "Henrique Rocha",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 126,
+          "points": 509
+        }
+      ]
+    },
+    "ATP:3304": {
+      "tour": "ATP",
+      "athleteId": "3304",
+      "player": "Sebastian Ofner",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 127,
+          "points": 505
+        }
+      ]
+    },
+    "ATP:2862": {
+      "tour": "ATP",
+      "athleteId": "2862",
+      "player": "Alexei Popyrin",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 128,
+          "points": 500
+        }
+      ]
+    },
+    "ATP:3301": {
+      "tour": "ATP",
+      "athleteId": "3301",
+      "player": "Christopher O'Connell",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 129,
+          "points": 491
+        }
+      ]
+    },
+    "ATP:3979": {
+      "tour": "ATP",
+      "athleteId": "3979",
+      "player": "Pablo Llamas Ruiz",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 130,
+          "points": 489
+        }
+      ]
+    },
+    "ATP:8243": {
+      "tour": "ATP",
+      "athleteId": "8243",
+      "player": "Leandro Riedi",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 131,
+          "points": 487
+        }
+      ]
+    },
+    "ATP:2498": {
+      "tour": "ATP",
+      "athleteId": "2498",
+      "player": "Nikoloz Basilashvili",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 132,
+          "points": 482
+        }
+      ]
+    },
+    "ATP:10064": {
+      "tour": "ATP",
+      "athleteId": "10064",
+      "player": "Gustavo Heide",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 133,
+          "points": 474
+        }
+      ]
+    },
+    "ATP:3204": {
+      "tour": "ATP",
+      "athleteId": "3204",
+      "player": "Jurij Rodionov",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 134,
+          "points": 463
+        }
+      ]
+    },
+    "ATP:2627": {
+      "tour": "ATP",
+      "athleteId": "2627",
+      "player": "Andrea Pellegrino",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 135,
+          "points": 454
+        }
+      ]
+    },
+    "ATP:3308": {
+      "tour": "ATP",
+      "athleteId": "3308",
+      "player": "Alexandre Muller",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 136,
+          "points": 445
+        }
+      ]
+    },
+    "ATP:2228": {
+      "tour": "ATP",
+      "athleteId": "2228",
+      "player": "Cristian Garin",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 137,
+          "points": 438
+        }
+      ]
+    },
+    "ATP:1287": {
+      "tour": "ATP",
+      "athleteId": "1287",
+      "player": "Grigor Dimitrov",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 138,
+          "points": 432
+        }
+      ]
+    },
+    "ATP:7841": {
+      "tour": "ATP",
+      "athleteId": "7841",
+      "player": "Arthur Cazaux",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 139,
+          "points": 432
+        }
+      ]
+    },
+    "ATP:2682": {
+      "tour": "ATP",
+      "athleteId": "2682",
+      "player": "Stefano Travaglia",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 140,
+          "points": 429
+        }
+      ]
+    },
+    "ATP:1849": {
+      "tour": "ATP",
+      "athleteId": "1849",
+      "player": "Hugo Dellien",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 141,
+          "points": 426
+        }
+      ]
+    },
+    "ATP:2952": {
+      "tour": "ATP",
+      "athleteId": "2952",
+      "player": "Reilly Opelka",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 142,
+          "points": 421
+        }
+      ]
+    },
+    "ATP:3856": {
+      "tour": "ATP",
+      "athleteId": "3856",
+      "player": "Jack Draper",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 143,
+          "points": 410
+        }
+      ]
+    },
+    "ATP:2206": {
+      "tour": "ATP",
+      "athleteId": "2206",
+      "player": "Mackenzie McDonald",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 144,
+          "points": 405
+        }
+      ]
+    },
+    "ATP:11223": {
+      "tour": "ATP",
+      "athleteId": "11223",
+      "player": "Tom Gentzsch",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 145,
+          "points": 402
+        }
+      ]
+    },
+    "ATP:1769": {
+      "tour": "ATP",
+      "athleteId": "1769",
+      "player": "Dusan Lajovic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 146,
+          "points": 400
+        }
+      ]
+    },
+    "ATP:9923": {
+      "tour": "ATP",
+      "athleteId": "9923",
+      "player": "Tomas Barrios Vera",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 147,
+          "points": 400
+        }
+      ]
+    },
+    "ATP:11083": {
+      "tour": "ATP",
+      "athleteId": "11083",
+      "player": "Nishesh Basavareddy",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 148,
+          "points": 399
+        }
+      ]
+    },
+    "ATP:3818": {
+      "tour": "ATP",
+      "athleteId": "3818",
+      "player": "Timofey Skatov",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 149,
+          "points": 391
+        }
+      ]
+    },
+    "ATP:11457": {
+      "tour": "ATP",
+      "athleteId": "11457",
+      "player": "Joel Josef Schwaerzler",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 150,
+          "points": 390
+        }
+      ]
+    },
+    "WTA:3038": {
+      "tour": "WTA",
+      "athleteId": "3038",
+      "player": "Aryna Sabalenka",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 1,
+          "points": 8670
+        }
+      ]
+    },
+    "WTA:3126": {
+      "tour": "WTA",
+      "athleteId": "3126",
+      "player": "Elena Rybakina",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 2,
+          "points": 8316
+        }
+      ]
+    },
+    "WTA:2113": {
+      "tour": "WTA",
+      "athleteId": "2113",
+      "player": "Jessica Pegula",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 3,
+          "points": 6680
+        }
+      ]
+    },
+    "WTA:3626": {
+      "tour": "WTA",
+      "athleteId": "3626",
+      "player": "Coco Gauff",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 4,
+          "points": 5919
+        }
+      ]
+    },
+    "WTA:3730": {
+      "tour": "WTA",
+      "athleteId": "3730",
+      "player": "Iga Swiatek",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 5,
+          "points": 5419
+        }
+      ]
+    },
+    "WTA:9820": {
+      "tour": "WTA",
+      "athleteId": "9820",
+      "player": "Mirra Andreeva",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 6,
+          "points": 5323
+        }
+      ]
+    },
+    "WTA:3039": {
+      "tour": "WTA",
+      "athleteId": "3039",
+      "player": "Karolina Muchova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 7,
+          "points": 5048
+        }
+      ]
+    },
+    "WTA:6970": {
+      "tour": "WTA",
+      "athleteId": "6970",
+      "player": "Linda Noskova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 8,
+          "points": 5016
+        }
+      ]
+    },
+    "WTA:1797": {
+      "tour": "WTA",
+      "athleteId": "1797",
+      "player": "Elina Svitolina",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 9,
+          "points": 4634
+        }
+      ]
+    },
+    "WTA:3221": {
+      "tour": "WTA",
+      "athleteId": "3221",
+      "player": "Amanda Anisimova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 10,
+          "points": 4353
+        }
+      ]
+    },
+    "WTA:3382": {
+      "tour": "WTA",
+      "athleteId": "3382",
+      "player": "Marta Kostyuk",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 11,
+          "points": 3830
+        }
+      ]
+    },
+    "WTA:2183": {
+      "tour": "WTA",
+      "athleteId": "2183",
+      "player": "Belinda Bencic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 12,
+          "points": 2995
+        }
+      ]
+    },
+    "WTA:2789": {
+      "tour": "WTA",
+      "athleteId": "2789",
+      "player": "Naomi Osaka",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 13,
+          "points": 2846
+        }
+      ]
+    },
+    "WTA:8017": {
+      "tour": "WTA",
+      "athleteId": "8017",
+      "player": "Diana Shnaider",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 14,
+          "points": 2798
+        }
+      ]
+    },
+    "WTA:2615": {
+      "tour": "WTA",
+      "athleteId": "2615",
+      "player": "Jasmine Paolini",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 15,
+          "points": 2773
+        }
+      ]
+    },
+    "WTA:14311": {
+      "tour": "WTA",
+      "athleteId": "14311",
+      "player": "Iva Jovic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 16,
+          "points": 2691
+        }
+      ]
+    },
+    "WTA:11219": {
+      "tour": "WTA",
+      "athleteId": "11219",
+      "player": "Victoria Mboko",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 17,
+          "points": 2530
+        }
+      ]
+    },
+    "WTA:3182": {
+      "tour": "WTA",
+      "athleteId": "3182",
+      "player": "Ekaterina Alexandrova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 18,
+          "points": 2506
+        }
+      ]
+    },
+    "WTA:1774": {
+      "tour": "WTA",
+      "athleteId": "1774",
+      "player": "Sorana Cirstea",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 19,
+          "points": 2502
+        }
+      ]
+    },
+    "WTA:7759": {
+      "tour": "WTA",
+      "athleteId": "7759",
+      "player": "Alexandra Eala",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 20,
+          "points": 2216
+        }
+      ]
+    },
+    "WTA:2977": {
+      "tour": "WTA",
+      "athleteId": "2977",
+      "player": "Anna Kalinskaya",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 21,
+          "points": 2083
+        }
+      ]
+    },
+    "WTA:2221": {
+      "tour": "WTA",
+      "athleteId": "2221",
+      "player": "Elise Mertens",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 22,
+          "points": 2003
+        }
+      ]
+    },
+    "WTA:3417": {
+      "tour": "WTA",
+      "athleteId": "3417",
+      "player": "Maja Chwalinska",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 23,
+          "points": 1984
+        }
+      ]
+    },
+    "WTA:1556": {
+      "tour": "WTA",
+      "athleteId": "1556",
+      "player": "Madison Keys",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 24,
+          "points": 1814
+        }
+      ]
+    },
+    "WTA:2971": {
+      "tour": "WTA",
+      "athleteId": "2971",
+      "player": "Anastasia Potapova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 25,
+          "points": 1781
+        }
+      ]
+    },
+    "WTA:2042": {
+      "tour": "WTA",
+      "athleteId": "2042",
+      "player": "Barbora Krejcikova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 26,
+          "points": 1776
+        }
+      ]
+    },
+    "WTA:2392": {
+      "tour": "WTA",
+      "athleteId": "2392",
+      "player": "Marie Bouzkova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 27,
+          "points": 1774
+        }
+      ]
+    },
+    "WTA:3785": {
+      "tour": "WTA",
+      "athleteId": "3785",
+      "player": "Emma Navarro",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 28,
+          "points": 1669
+        }
+      ]
+    },
+    "WTA:3380": {
+      "tour": "WTA",
+      "athleteId": "3380",
+      "player": "Ann Li",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 29,
+          "points": 1596
+        }
+      ]
+    },
+    "WTA:2195": {
+      "tour": "WTA",
+      "athleteId": "2195",
+      "player": "Jelena Ostapenko",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 30,
+          "points": 1537
+        }
+      ]
+    },
+    "WTA:3641": {
+      "tour": "WTA",
+      "athleteId": "3641",
+      "player": "Leylah Fernandez",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 31,
+          "points": 1454
+        }
+      ]
+    },
+    "WTA:3018": {
+      "tour": "WTA",
+      "athleteId": "3018",
+      "player": "Maria Sakkari",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 32,
+          "points": 1385
+        }
+      ]
+    },
+    "WTA:3913": {
+      "tour": "WTA",
+      "athleteId": "3913",
+      "player": "Hailey Baptiste",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 33,
+          "points": 1338
+        }
+      ]
+    },
+    "WTA:2040": {
+      "tour": "WTA",
+      "athleteId": "2040",
+      "player": "Donna Vekic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 34,
+          "points": 1336
+        }
+      ]
+    },
+    "WTA:7819": {
+      "tour": "WTA",
+      "athleteId": "7819",
+      "player": "Sara Bejlek",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 35,
+          "points": 1289
+        }
+      ]
+    },
+    "WTA:3387": {
+      "tour": "WTA",
+      "athleteId": "3387",
+      "player": "Wang Xinyu",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 36,
+          "points": 1248
+        }
+      ]
+    },
+    "WTA:6368": {
+      "tour": "WTA",
+      "athleteId": "6368",
+      "player": "Janice Tjen",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 37,
+          "points": 1238
+        }
+      ]
+    },
+    "WTA:3157": {
+      "tour": "WTA",
+      "athleteId": "3157",
+      "player": "Cristina Bucsa",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 38,
+          "points": 1224
+        }
+      ]
+    },
+    "WTA:7804": {
+      "tour": "WTA",
+      "athleteId": "7804",
+      "player": "Nikola Bartunkova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 39,
+          "points": 1203
+        }
+      ]
+    },
+    "WTA:2737": {
+      "tour": "WTA",
+      "athleteId": "2737",
+      "player": "Jaqueline Cristian",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 40,
+          "points": 1191
+        }
+      ]
+    },
+    "WTA:2672": {
+      "tour": "WTA",
+      "athleteId": "2672",
+      "player": "Magdalena Frech",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 41,
+          "points": 1185
+        }
+      ]
+    },
+    "WTA:3792": {
+      "tour": "WTA",
+      "athleteId": "3792",
+      "player": "Clara Tauson",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 42,
+          "points": 1184
+        }
+      ]
+    },
+    "WTA:3840": {
+      "tour": "WTA",
+      "athleteId": "3840",
+      "player": "Liudmila Samsonova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 43,
+          "points": 1178
+        }
+      ]
+    },
+    "WTA:2248": {
+      "tour": "WTA",
+      "athleteId": "2248",
+      "player": "Katerina Siniakova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 44,
+          "points": 1170
+        }
+      ]
+    },
+    "WTA:5941": {
+      "tour": "WTA",
+      "athleteId": "5941",
+      "player": "Daria Snigur",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 45,
+          "points": 1163
+        }
+      ]
+    },
+    "WTA:5705": {
+      "tour": "WTA",
+      "athleteId": "5705",
+      "player": "Oleksandra Oliynykova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 46,
+          "points": 1154
+        }
+      ]
+    },
+    "WTA:3040": {
+      "tour": "WTA",
+      "athleteId": "3040",
+      "player": "Tamara Korpatsch",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 47,
+          "points": 1128
+        }
+      ]
+    },
+    "WTA:10830": {
+      "tour": "WTA",
+      "athleteId": "10830",
+      "player": "Lilli Tagger",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 48,
+          "points": 1123
+        }
+      ]
+    },
+    "WTA:2179": {
+      "tour": "WTA",
+      "athleteId": "2179",
+      "player": "Mayar Sherif",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 49,
+          "points": 1105
+        }
+      ]
+    },
+    "WTA:5604": {
+      "tour": "WTA",
+      "athleteId": "5604",
+      "player": "Zeynep Sonmez",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 50,
+          "points": 1082
+        }
+      ]
+    },
+    "WTA:2411": {
+      "tour": "WTA",
+      "athleteId": "2411",
+      "player": "Anhelina Kalinina",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 51,
+          "points": 1081
+        }
+      ]
+    },
+    "WTA:2458": {
+      "tour": "WTA",
+      "athleteId": "2458",
+      "player": "Viktorija Golubic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 52,
+          "points": 1072
+        }
+      ]
+    },
+    "WTA:5848": {
+      "tour": "WTA",
+      "athleteId": "5848",
+      "player": "Peyton Stearns",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 53,
+          "points": 1061
+        }
+      ]
+    },
+    "WTA:707": {
+      "tour": "WTA",
+      "athleteId": "707",
+      "player": "Zhang Shuai",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 54,
+          "points": 1060
+        }
+      ]
+    },
+    "WTA:3404": {
+      "tour": "WTA",
+      "athleteId": "3404",
+      "player": "Camila Osorio",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 55,
+          "points": 1048
+        }
+      ]
+    },
+    "WTA:6724": {
+      "tour": "WTA",
+      "athleteId": "6724",
+      "player": "Ashlyn Krueger",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 56,
+          "points": 1047
+        }
+      ]
+    },
+    "WTA:740": {
+      "tour": "WTA",
+      "athleteId": "740",
+      "player": "Karolina Pliskova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 57,
+          "points": 1041
+        }
+      ]
+    },
+    "WTA:5528": {
+      "tour": "WTA",
+      "athleteId": "5528",
+      "player": "McCartney Kessler",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 58,
+          "points": 1040
+        }
+      ]
+    },
+    "WTA:3398": {
+      "tour": "WTA",
+      "athleteId": "3398",
+      "player": "Emma Raducanu",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 59,
+          "points": 1040
+        }
+      ]
+    },
+    "WTA:3831": {
+      "tour": "WTA",
+      "athleteId": "3831",
+      "player": "Elisabetta Cocciaretto",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 60,
+          "points": 1035
+        }
+      ]
+    },
+    "WTA:6816": {
+      "tour": "WTA",
+      "athleteId": "6816",
+      "player": "Antonia Ruzic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 61,
+          "points": 1032
+        }
+      ]
+    },
+    "WTA:1649": {
+      "tour": "WTA",
+      "athleteId": "1649",
+      "player": "Magda Linette",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 62,
+          "points": 1026
+        }
+      ]
+    },
+    "WTA:5309": {
+      "tour": "WTA",
+      "athleteId": "5309",
+      "player": "Alycia Parks",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 63,
+          "points": 1014
+        }
+      ]
+    },
+    "WTA:8419": {
+      "tour": "WTA",
+      "athleteId": "8419",
+      "player": "Tereza Valentova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 64,
+          "points": 1012
+        }
+      ]
+    },
+    "WTA:6708": {
+      "tour": "WTA",
+      "athleteId": "6708",
+      "player": "Talia Gibson",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 65,
+          "points": 1010
+        }
+      ]
+    },
+    "WTA:3332": {
+      "tour": "WTA",
+      "athleteId": "3332",
+      "player": "Diane Parry",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 66,
+          "points": 1006
+        }
+      ]
+    },
+    "WTA:14146": {
+      "tour": "WTA",
+      "athleteId": "14146",
+      "player": "Maya Joint",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 67,
+          "points": 1006
+        }
+      ]
+    },
+    "WTA:2191": {
+      "tour": "WTA",
+      "athleteId": "2191",
+      "player": "Daria Kasatkina",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 68,
+          "points": 1003
+        }
+      ]
+    },
+    "WTA:2588": {
+      "tour": "WTA",
+      "athleteId": "2588",
+      "player": "Kimberly Birrell",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 69,
+          "points": 999
+        }
+      ]
+    },
+    "WTA:3223": {
+      "tour": "WTA",
+      "athleteId": "3223",
+      "player": "Catherine McNally",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 70,
+          "points": 990
+        }
+      ]
+    },
+    "WTA:2054": {
+      "tour": "WTA",
+      "athleteId": "2054",
+      "player": "Katie Boulter",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 71,
+          "points": 987
+        }
+      ]
+    },
+    "WTA:8404": {
+      "tour": "WTA",
+      "athleteId": "8404",
+      "player": "Petra Marcinko",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 72,
+          "points": 974
+        }
+      ]
+    },
+    "WTA:2751": {
+      "tour": "WTA",
+      "athleteId": "2751",
+      "player": "Renata Zarazua",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 73,
+          "points": 971
+        }
+      ]
+    },
+    "WTA:2748": {
+      "tour": "WTA",
+      "athleteId": "2748",
+      "player": "Elena-Gabriela Ruse",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 74,
+          "points": 966
+        }
+      ]
+    },
+    "WTA:9169": {
+      "tour": "WTA",
+      "athleteId": "9169",
+      "player": "Alina Korneeva",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 75,
+          "points": 962
+        }
+      ]
+    },
+    "WTA:2734": {
+      "tour": "WTA",
+      "athleteId": "2734",
+      "player": "Anna Bondar",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 76,
+          "points": 961
+        }
+      ]
+    },
+    "WTA:3000": {
+      "tour": "WTA",
+      "athleteId": "3000",
+      "player": "Panna Udvardy",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 77,
+          "points": 961
+        }
+      ]
+    },
+    "WTA:13478": {
+      "tour": "WTA",
+      "athleteId": "13478",
+      "player": "Yuliia Starodubtseva",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 78,
+          "points": 953
+        }
+      ]
+    },
+    "WTA:6953": {
+      "tour": "WTA",
+      "athleteId": "6953",
+      "player": "Lanlana Tararudee",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 79,
+          "points": 950
+        }
+      ]
+    },
+    "WTA:2346": {
+      "tour": "WTA",
+      "athleteId": "2346",
+      "player": "Tatjana Maria",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 80,
+          "points": 923
+        }
+      ]
+    },
+    "WTA:1802": {
+      "tour": "WTA",
+      "athleteId": "1802",
+      "player": "Yulia Putintseva",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 81,
+          "points": 904
+        }
+      ]
+    },
+    "WTA:8808": {
+      "tour": "WTA",
+      "athleteId": "8808",
+      "player": "Hanne Vandewinkel",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 82,
+          "points": 904
+        }
+      ]
+    },
+    "WTA:3908": {
+      "tour": "WTA",
+      "athleteId": "3908",
+      "player": "Kamilla Rakhimova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 83,
+          "points": 894
+        }
+      ]
+    },
+    "WTA:2731": {
+      "tour": "WTA",
+      "athleteId": "2731",
+      "player": "Paula Badosa",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 84,
+          "points": 885
+        }
+      ]
+    },
+    "WTA:7797": {
+      "tour": "WTA",
+      "athleteId": "7797",
+      "player": "Sinja Kraus",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 85,
+          "points": 855
+        }
+      ]
+    },
+    "WTA:6500": {
+      "tour": "WTA",
+      "athleteId": "6500",
+      "player": "Solana Sierra",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 86,
+          "points": 850
+        }
+      ]
+    },
+    "WTA:3388": {
+      "tour": "WTA",
+      "athleteId": "3388",
+      "player": "Simona Waltert",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 87,
+          "points": 846
+        }
+      ]
+    },
+    "WTA:6488": {
+      "tour": "WTA",
+      "athleteId": "6488",
+      "player": "Darja Vidmanova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 88,
+          "points": 842
+        }
+      ]
+    },
+    "WTA:3746": {
+      "tour": "WTA",
+      "athleteId": "3746",
+      "player": "Katie Volynets",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 89,
+          "points": 838
+        }
+      ]
+    },
+    "WTA:6059": {
+      "tour": "WTA",
+      "athleteId": "6059",
+      "player": "Jessica Bouzas Maneiro",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 90,
+          "points": 834
+        }
+      ]
+    },
+    "WTA:5775": {
+      "tour": "WTA",
+      "athleteId": "5775",
+      "player": "Anastasia Zakharova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 91,
+          "points": 827
+        }
+      ]
+    },
+    "WTA:5260": {
+      "tour": "WTA",
+      "athleteId": "5260",
+      "player": "Eva Lys",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 92,
+          "points": 816
+        }
+      ]
+    },
+    "WTA:1549": {
+      "tour": "WTA",
+      "athleteId": "1549",
+      "player": "Ajla Tomljanovic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 93,
+          "points": 815
+        }
+      ]
+    },
+    "WTA:2114": {
+      "tour": "WTA",
+      "athleteId": "2114",
+      "player": "Taylor Townsend",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 94,
+          "points": 813
+        }
+      ]
+    },
+    "WTA:3184": {
+      "tour": "WTA",
+      "athleteId": "3184",
+      "player": "Emiliana Arango",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 95,
+          "points": 813
+        }
+      ]
+    },
+    "WTA:10501": {
+      "tour": "WTA",
+      "athleteId": "10501",
+      "player": "Maria Timofeeva",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 96,
+          "points": 806
+        }
+      ]
+    },
+    "WTA:6413": {
+      "tour": "WTA",
+      "athleteId": "6413",
+      "player": "Polina Kudermetova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 97,
+          "points": 788
+        }
+      ]
+    },
+    "WTA:1881": {
+      "tour": "WTA",
+      "athleteId": "1881",
+      "player": "Laura Siegemund",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 98,
+          "points": 787
+        }
+      ]
+    },
+    "WTA:6571": {
+      "tour": "WTA",
+      "athleteId": "6571",
+      "player": "Oksana Selekhmeteva",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 99,
+          "points": 786
+        }
+      ]
+    },
+    "WTA:5734": {
+      "tour": "WTA",
+      "athleteId": "5734",
+      "player": "Moyuka Uchijima",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 100,
+          "points": 783
+        }
+      ]
+    },
+    "WTA:7672": {
+      "tour": "WTA",
+      "athleteId": "7672",
+      "player": "Taylah Preston",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 101,
+          "points": 762
+        }
+      ]
+    },
+    "WTA:6061": {
+      "tour": "WTA",
+      "athleteId": "6061",
+      "player": "Elsa Jacquemot",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 102,
+          "points": 757
+        }
+      ]
+    },
+    "WTA:10500": {
+      "tour": "WTA",
+      "athleteId": "10500",
+      "player": "Ella Seidel",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 103,
+          "points": 755
+        }
+      ]
+    },
+    "WTA:7815": {
+      "tour": "WTA",
+      "athleteId": "7815",
+      "player": "Francesca Jones",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 104,
+          "points": 751
+        }
+      ]
+    },
+    "WTA:5613": {
+      "tour": "WTA",
+      "athleteId": "5613",
+      "player": "Mananchaya Sawangkaew",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 105,
+          "points": 750
+        }
+      ]
+    },
+    "WTA:3899": {
+      "tour": "WTA",
+      "athleteId": "3899",
+      "player": "Varvara Gracheva",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 106,
+          "points": 748
+        }
+      ]
+    },
+    "WTA:3142": {
+      "tour": "WTA",
+      "athleteId": "3142",
+      "player": "Dayana Yastremska",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 107,
+          "points": 747
+        }
+      ]
+    },
+    "WTA:3155": {
+      "tour": "WTA",
+      "athleteId": "3155",
+      "player": "Wang Xiyu",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 108,
+          "points": 743
+        }
+      ]
+    },
+    "WTA:5878": {
+      "tour": "WTA",
+      "athleteId": "5878",
+      "player": "Veronika Erjavec",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 109,
+          "points": 741
+        }
+      ]
+    },
+    "WTA:14460": {
+      "tour": "WTA",
+      "athleteId": "14460",
+      "player": "Kaitlin Quevedo",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 110,
+          "points": 735
+        }
+      ]
+    },
+    "WTA:2902": {
+      "tour": "WTA",
+      "athleteId": "2902",
+      "player": "Anna Blinkova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 111,
+          "points": 734
+        }
+      ]
+    },
+    "WTA:6769": {
+      "tour": "WTA",
+      "athleteId": "6769",
+      "player": "Darja Semenistaja",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 112,
+          "points": 714
+        }
+      ]
+    },
+    "WTA:6570": {
+      "tour": "WTA",
+      "athleteId": "6570",
+      "player": "Alina Charaeva",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 113,
+          "points": 694
+        }
+      ]
+    },
+    "WTA:2980": {
+      "tour": "WTA",
+      "athleteId": "2980",
+      "player": "Claire Liu",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 114,
+          "points": 690
+        }
+      ]
+    },
+    "WTA:2746": {
+      "tour": "WTA",
+      "athleteId": "2746",
+      "player": "Sofia Kenin",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 115,
+          "points": 684
+        }
+      ]
+    },
+    "WTA:4666": {
+      "tour": "WTA",
+      "athleteId": "4666",
+      "player": "Lucia Bronzetti",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 116,
+          "points": 674
+        }
+      ]
+    },
+    "WTA:4453": {
+      "tour": "WTA",
+      "athleteId": "4453",
+      "player": "Leolia Jeanjean",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 117,
+          "points": 667
+        }
+      ]
+    },
+    "WTA:2599": {
+      "tour": "WTA",
+      "athleteId": "2599",
+      "player": "Julia Grabher",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 118,
+          "points": 660
+        }
+      ]
+    },
+    "WTA:8495": {
+      "tour": "WTA",
+      "athleteId": "8495",
+      "player": "Lulu Sun",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 119,
+          "points": 655
+        }
+      ]
+    },
+    "WTA:5937": {
+      "tour": "WTA",
+      "athleteId": "5937",
+      "player": "Elvina Kalieva",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 120,
+          "points": 640
+        }
+      ]
+    },
+    "WTA:2974": {
+      "tour": "WTA",
+      "athleteId": "2974",
+      "player": "Kayla Day",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 121,
+          "points": 630
+        }
+      ]
+    },
+    "WTA:15069": {
+      "tour": "WTA",
+      "athleteId": "15069",
+      "player": "Laura Samson",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 122,
+          "points": 627
+        }
+      ]
+    },
+    "WTA:7436": {
+      "tour": "WTA",
+      "athleteId": "7436",
+      "player": "Dominika Salkova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 123,
+          "points": 622
+        }
+      ]
+    },
+    "WTA:7209": {
+      "tour": "WTA",
+      "athleteId": "7209",
+      "player": "Sonay Kartal",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 124,
+          "points": 618
+        }
+      ]
+    },
+    "WTA:7778": {
+      "tour": "WTA",
+      "athleteId": "7778",
+      "player": "Victoria Jimenez Kasintseva",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 125,
+          "points": 616
+        }
+      ]
+    },
+    "WTA:2916": {
+      "tour": "WTA",
+      "athleteId": "2916",
+      "player": "Yuan Yue",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 126,
+          "points": 615
+        }
+      ]
+    },
+    "WTA:6048": {
+      "tour": "WTA",
+      "athleteId": "6048",
+      "player": "Zheng Qinwen",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 127,
+          "points": 613
+        }
+      ]
+    },
+    "WTA:2738": {
+      "tour": "WTA",
+      "athleteId": "2738",
+      "player": "Rebecca Sramkova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 128,
+          "points": 604
+        }
+      ]
+    },
+    "WTA:18772": {
+      "tour": "WTA",
+      "athleteId": "18772",
+      "player": "Kristina Liutova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 129,
+          "points": 603
+        }
+      ]
+    },
+    "WTA:13479": {
+      "tour": "WTA",
+      "athleteId": "13479",
+      "player": "Mary Stoiana",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 130,
+          "points": 602
+        }
+      ]
+    },
+    "WTA:12287": {
+      "tour": "WTA",
+      "athleteId": "12287",
+      "player": "Emerson Jones",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 131,
+          "points": 601
+        }
+      ]
+    },
+    "WTA:2584": {
+      "tour": "WTA",
+      "athleteId": "2584",
+      "player": "Maddison Inglis",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 132,
+          "points": 595
+        }
+      ]
+    },
+    "WTA:3889": {
+      "tour": "WTA",
+      "athleteId": "3889",
+      "player": "Katarzyna Kawa",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 133,
+          "points": 590
+        }
+      ]
+    },
+    "WTA:8690": {
+      "tour": "WTA",
+      "athleteId": "8690",
+      "player": "Marina Bassols Ribera",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 134,
+          "points": 579
+        }
+      ]
+    },
+    "WTA:8411": {
+      "tour": "WTA",
+      "athleteId": "8411",
+      "player": "Lisa Pigato",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 135,
+          "points": 577
+        }
+      ]
+    },
+    "WTA:11317": {
+      "tour": "WTA",
+      "athleteId": "11317",
+      "player": "Himeno Sakatsume",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 136,
+          "points": 574
+        }
+      ]
+    },
+    "WTA:14080": {
+      "tour": "WTA",
+      "athleteId": "14080",
+      "player": "Veronika Podrez",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 137,
+          "points": 574
+        }
+      ]
+    },
+    "WTA:1809": {
+      "tour": "WTA",
+      "athleteId": "1809",
+      "player": "Aliaksandra Sasnovich",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 138,
+          "points": 563
+        }
+      ]
+    },
+    "WTA:15755": {
+      "tour": "WTA",
+      "athleteId": "15755",
+      "player": "Jeline Vandromme",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 139,
+          "points": 562
+        }
+      ]
+    },
+    "WTA:17105": {
+      "tour": "WTA",
+      "athleteId": "17105",
+      "player": "Carol Young Suh Lee",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 140,
+          "points": 560
+        }
+      ]
+    },
+    "WTA:7849": {
+      "tour": "WTA",
+      "athleteId": "7849",
+      "player": "Noma Noha Akugue",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 141,
+          "points": 559
+        }
+      ]
+    },
+    "WTA:8067": {
+      "tour": "WTA",
+      "athleteId": "8067",
+      "player": "Lucrezia Stefanini",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 142,
+          "points": 557
+        }
+      ]
+    },
+    "WTA:2200": {
+      "tour": "WTA",
+      "athleteId": "2200",
+      "player": "Harriet Dart",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 143,
+          "points": 557
+        }
+      ]
+    },
+    "WTA:6916": {
+      "tour": "WTA",
+      "athleteId": "6916",
+      "player": "Marina Stakusic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 144,
+          "points": 542
+        }
+      ]
+    },
+    "WTA:2665": {
+      "tour": "WTA",
+      "athleteId": "2665",
+      "player": "Veronika Kudermetova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 145,
+          "points": 536
+        }
+      ]
+    },
+    "WTA:2387": {
+      "tour": "WTA",
+      "athleteId": "2387",
+      "player": "Fiona Ferro",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 146,
+          "points": 534
+        }
+      ]
+    },
+    "WTA:4291": {
+      "tour": "WTA",
+      "athleteId": "4291",
+      "player": "Andrea Lazaro Garcia",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 147,
+          "points": 531
+        }
+      ]
+    },
+    "WTA:2735": {
+      "tour": "WTA",
+      "athleteId": "2735",
+      "player": "Marketa Vondrousova",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 148,
+          "points": 528
+        }
+      ]
+    },
+    "WTA:10676": {
+      "tour": "WTA",
+      "athleteId": "10676",
+      "player": "Leyre Romero Gormaz",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 149,
+          "points": 521
+        }
+      ]
+    },
+    "WTA:16002": {
+      "tour": "WTA",
+      "athleteId": "16002",
+      "player": "Teodora Kostovic",
+      "history": [
+        {
+          "date": "2026-08-06",
+          "rank": 150,
+          "points": 520
+        }
+      ]
+    }
+  }
+}

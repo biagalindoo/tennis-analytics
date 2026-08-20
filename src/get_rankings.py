@@ -1,4 +1,5 @@
 import json
+import sqlite3
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,6 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 PUBLIC_DATA_DIR = ROOT / "tennis-dashboard" / "public" / "data"
 CACHE_PATH = DATA_DIR / "athlete_cache.json"
+HISTORY_DB_PATH = DATA_DIR / "tennis_history.db"
 
 RANKING_INDEX = {
     "ATP": "https://sports.core.api.espn.com/v2/sports/tennis/leagues/atp/rankings",
@@ -193,6 +195,93 @@ def _write_dashboard_json(tours: dict) -> Path:
     return path
 
 
+def _store_ranking_history(tours: dict) -> Path:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    try:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS ranking_history (
+                tour TEXT NOT NULL,
+                athlete_id TEXT NOT NULL,
+                player TEXT NOT NULL,
+                snapshot_date TEXT NOT NULL,
+                rank INTEGER NOT NULL,
+                points INTEGER NOT NULL,
+                country TEXT,
+                PRIMARY KEY (tour, athlete_id, snapshot_date)
+            )
+            """
+        )
+        for tour, tour_data in tours.items():
+            snapshot_date = (tour_data.get("lastUpdated") or datetime.now(timezone.utc).isoformat())[:10]
+            connection.executemany(
+                """
+                INSERT INTO ranking_history
+                    (tour, athlete_id, player, snapshot_date, rank, points, country)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(tour, athlete_id, snapshot_date) DO UPDATE SET
+                    player = excluded.player,
+                    rank = excluded.rank,
+                    points = excluded.points,
+                    country = excluded.country
+                """,
+                [
+                    (
+                        tour,
+                        player["athleteId"],
+                        player["player"],
+                        snapshot_date,
+                        player["rank"],
+                        player["points"],
+                        player["country"],
+                    )
+                    for player in tour_data["players"]
+                ],
+            )
+        connection.commit()
+    finally:
+        connection.close()
+    return HISTORY_DB_PATH
+
+
+def _write_history_json() -> Path:
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        rows = connection.execute(
+            """
+            SELECT tour, athlete_id, player, snapshot_date, rank, points
+            FROM ranking_history
+            ORDER BY snapshot_date ASC
+            """
+        ).fetchall()
+    finally:
+        connection.close()
+
+    players = {}
+    for row in rows:
+        key = f"{row['tour']}:{row['athlete_id']}"
+        entry = players.setdefault(
+            key,
+            {"tour": row["tour"], "athleteId": row["athlete_id"], "player": row["player"], "history": []},
+        )
+        entry["history"].append(
+            {"date": row["snapshot_date"], "rank": row["rank"], "points": row["points"]}
+        )
+
+    path = PUBLIC_DATA_DIR / "ranking-history.json"
+    path.write_text(
+        json.dumps(
+            {"generatedAt": datetime.now(timezone.utc).isoformat(), "players": players},
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
 def get_atp_ranking() -> dict:
     print("Coletando ranking ATP...")
     data = _fetch_tour_ranking("ATP")
@@ -215,7 +304,11 @@ def update_rankings() -> dict:
         "WTA": get_wta_ranking(),
     }
     dashboard_path = _write_dashboard_json(tours)
+    history_db_path = _store_ranking_history(tours)
+    history_json_path = _write_history_json()
     print(f"Dashboard atualizado em {dashboard_path}")
+    print(f"Histórico armazenado em {history_db_path}")
+    print(f"Histórico do dashboard atualizado em {history_json_path}")
     return tours
 
 

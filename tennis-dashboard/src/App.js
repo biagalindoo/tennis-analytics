@@ -62,6 +62,37 @@ function playerMatchSummary(matches, player) {
   };
 }
 
+function RankingHistoryChart({ history }) {
+  if (!history?.length) return <p className="empty profile-empty">O histórico começará na próxima atualização do ETL.</p>;
+  if (history.length === 1) {
+    return <div className="history-start"><strong>#{history[0].rank}</strong><span>{formatPoints(history[0].points)} pontos em {new Date(`${history[0].date}T12:00:00`).toLocaleDateString("pt-BR")}</span><small>Primeiro registro salvo. O gráfico será formado nas próximas atualizações.</small></div>;
+  }
+
+  const width = 640;
+  const height = 170;
+  const padding = 22;
+  const ranks = history.map((item) => item.rank);
+  const minRank = Math.min(...ranks);
+  const maxRank = Math.max(...ranks);
+  const range = Math.max(maxRank - minRank, 1);
+  const points = history.map((item, index) => ({
+    ...item,
+    x: padding + (index / (history.length - 1)) * (width - padding * 2),
+    y: padding + ((item.rank - minRank) / range) * (height - padding * 2),
+  }));
+  const line = points.map((point) => `${point.x},${point.y}`).join(" ");
+
+  return (
+    <div className="history-chart">
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolução da posição no ranking">
+        <polyline points={line} fill="none" stroke="currentColor" strokeWidth="4" strokeLinejoin="round" />
+        {points.map((point) => <circle key={point.date} cx={point.x} cy={point.y} r="5"><title>{point.date}: #{point.rank} · {formatPoints(point.points)} pontos</title></circle>)}
+      </svg>
+      <div><span>{new Date(`${history[0].date}T12:00:00`).toLocaleDateString("pt-BR")}</span><strong>Melhor: #{minRank}</strong><span>{new Date(`${history[history.length - 1].date}T12:00:00`).toLocaleDateString("pt-BR")}</span></div>
+    </div>
+  );
+}
+
 function App() {
   const [payload, setPayload] = useState(null);
   const [error, setError] = useState("");
@@ -69,6 +100,7 @@ function App() {
   const [query, setQuery] = useState("");
   const [view, setView] = useState("ranking");
   const [events, setEvents] = useState(null);
+  const [rankingHistory, setRankingHistory] = useState(null);
   const [matchFilter, setMatchFilter] = useState("all");
   const [selectedMatchId, setSelectedMatchId] = useState(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
@@ -98,6 +130,13 @@ function App() {
       })
       .then(setPayload)
       .catch((err) => setError(err.message));
+  }, []);
+
+  useEffect(() => {
+    fetch("/data/ranking-history.json")
+      .then((response) => response.ok ? response.json() : null)
+      .then(setRankingHistory)
+      .catch(() => setRankingHistory(null));
   }, []);
 
   useEffect(() => {
@@ -169,6 +208,9 @@ function App() {
       )
     ).slice(0, 8);
   }, [events, selectedPlayer]);
+  const selectedPlayerHistory = selectedPlayer
+    ? rankingHistory?.players?.[`${tour}:${selectedPlayer.athleteId}`]?.history || []
+    : [];
   const comparePlayers = [
     tourData?.players?.find((player) => player.athleteId === comparePlayerIds[0]) || tourData?.players?.[0],
     tourData?.players?.find((player) => player.athleteId === comparePlayerIds[1]) || tourData?.players?.[1],
@@ -476,6 +518,11 @@ function App() {
               <div><span>Pontos</span><strong>{formatPoints(selectedPlayer.points)}</strong></div>
               <div><span>Variação</span><strong className={trendClass(selectedPlayer.trend)}>{selectedPlayer.trend}</strong></div>
               <div><span>Idade</span><strong>{selectedPlayer.age ?? "—"}</strong></div>
+            </div>
+
+            <div className="profile-history">
+              <div className="profile-section-title"><h3>Evolução no ranking</h3><span>{selectedPlayerHistory.length} registros</span></div>
+              <RankingHistoryChart history={selectedPlayerHistory} />
             </div>
 
             <div className="profile-matches">

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T16:49:55.345497+00:00",
+  "generatedAt": "2026-08-20T16:53:58.500862+00:00",
   "source": "ESPN Tennis Scoreboard",
   "refreshSeconds": 60,
   "tournaments": [
@@ -14,7 +14,7 @@
         "WTA"
       ],
       "matchCount": 324,
-      "liveCount": 0
+      "liveCount": 1
     }
   ],
   "matches": [
@@ -26,9 +26,9 @@
       "discipline": "Men's Doubles",
       "round": "Round 2",
       "date": "2026-08-20T16:45Z",
-      "state": "pre",
-      "status": "Scheduled",
-      "detail": "Thu, August 20th at 12:45 PM EDT",
+      "state": "in",
+      "status": "In Progress",
+      "detail": "1st Set",
       "venue": "Cincinnati, USA",
       "court": "Grandstand",
       "competitors": [
@@ -39,7 +39,13 @@
           "country": "Germany",
           "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ger.png",
           "winner": false,
-          "sets": []
+          "sets": [
+            {
+              "value": 1,
+              "tiebreak": null,
+              "winner": false
+            }
+          ]
         },
         {
           "id": "841-3335",
@@ -48,7 +54,13 @@
           "country": "USA",
           "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
           "winner": false,
-          "sets": []
+          "sets": [
+            {
+              "value": 0,
+              "tiebreak": null,
+              "winner": false
+            }
+          ]
         }
       ]
     },
@@ -59,10 +71,10 @@
       "tour": "ATP",
       "discipline": "Men's Doubles",
       "round": "Round 2",
-      "date": "2026-08-20T16:50Z",
+      "date": "2026-08-20T16:55Z",
       "state": "pre",
       "status": "Scheduled",
-      "detail": "Thu, August 20th at 12:50 PM EDT",
+      "detail": "Thu, August 20th at 12:55 PM EDT",
       "venue": "Cincinnati, USA",
       "court": "Tony Trabert Stadium 3",
       "competitors": [

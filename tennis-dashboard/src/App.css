@@ -651,6 +651,65 @@ th {
   margin: 0;
 }
 
+.profile-history {
+  margin-bottom: 24px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #102b17;
+}
+
+.history-start {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 3px 12px;
+  padding: 12px 0 2px;
+}
+
+.history-start strong {
+  grid-row: span 2;
+  color: var(--accent);
+  font-size: 30px;
+}
+
+.history-start span {
+  font-weight: 700;
+}
+
+.history-start small {
+  color: var(--muted);
+}
+
+.history-chart {
+  color: var(--accent);
+}
+
+.history-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 190px;
+  overflow: visible;
+}
+
+.history-chart circle {
+  fill: #0c2413;
+  stroke: currentColor;
+  stroke-width: 3;
+}
+
+.history-chart > div {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.history-chart > div strong {
+  color: var(--text);
+}
+
 .profile-match {
   display: flex;
   width: 100%;

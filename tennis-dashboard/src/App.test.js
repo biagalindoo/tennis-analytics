@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import App from './App';
 
 const ranking = {
@@ -27,12 +27,20 @@ const events = {
   ],
 };
 
+const rankingHistory = {
+  players: {
+    'ATP:1': { athleteId: '1', history: [{ date: '2026-08-06', rank: 1, points: 13450 }] },
+  },
+};
+
 beforeEach(() => {
   window.localStorage.clear();
   global.fetch = jest.fn((url) =>
     Promise.resolve({
       ok: true,
-      json: () => Promise.resolve(String(url).includes('events.json') ? events : ranking),
+      json: () => Promise.resolve(
+        String(url).includes('events.json') ? events : String(url).includes('ranking-history.json') ? rankingHistory : ranking
+      ),
     })
   );
 });
@@ -90,9 +98,11 @@ test('opens a player profile with ranking, matches and favorite state', async ()
 
   fireEvent.click(playerNames[0]);
 
-  expect(screen.getByRole('dialog', { name: 'Jannik Sinner' })).toBeInTheDocument();
-  expect(screen.getAllByText('#1')).toHaveLength(2);
+  const profile = screen.getByRole('dialog', { name: 'Jannik Sinner' });
+  expect(profile).toBeInTheDocument();
+  expect(within(profile).getAllByText('#1')).toHaveLength(2);
   expect(screen.getByText('vs. Carlos Alcaraz')).toBeInTheDocument();
+  expect(screen.getByText(/Primeiro registro salvo/)).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Alternar jogador favorito' }));
   expect(JSON.parse(window.localStorage.getItem('favoritePlayerIds'))).toEqual(['1']);
