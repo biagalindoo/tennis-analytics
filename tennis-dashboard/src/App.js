@@ -142,6 +142,7 @@ function App() {
       return [];
     }
   });
+  const [notificationSettings, setNotificationSettings] = useState({ beforeMatch: true, matchStart: true, scheduleChange: true, matchEnd: true });
   const [authToken, setAuthToken] = useState(() => window.localStorage.getItem("tennisAuthToken") || "");
   const [currentUser, setCurrentUser] = useState(null);
   const [authOpen, setAuthOpen] = useState(false);
@@ -153,6 +154,7 @@ function App() {
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountMessage, setAccountMessage] = useState("");
   const previousMatchStates = useRef(new Map());
+  const deliveredAlertIds = useRef(new Set(alerts.map((alert) => alert.id)));
   const [comparePlayerIds, setComparePlayerIds] = useState(["", ""]);
   const [favoriteMatchIds, setFavoriteMatchIds] = useState(() => {
     try {
@@ -194,6 +196,7 @@ function App() {
           setFavoritePlayerIds(preferences.favoritePlayerIds || []);
           setFavoriteMatchIds(preferences.favoriteMatchIds || []);
           setTour(preferences.preferredTour || "ATP");
+          setNotificationSettings((current) => ({ ...current, ...(preferences.notificationSettings || {}) }));
         } else {
           let localPlayers = [];
           let localMatches = [];
@@ -206,7 +209,7 @@ function App() {
           await fetch("/api/account/preferences", {
             method: "POST",
             headers: { ...headers, "Content-Type": "application/json" },
-            body: JSON.stringify({ favoritePlayerIds: localPlayers, favoriteMatchIds: localMatches, preferredTour: tour }),
+            body: JSON.stringify({ favoritePlayerIds: localPlayers, favoriteMatchIds: localMatches, preferredTour: tour, notificationSettings }),
           });
         }
         setPreferencesReady(true);
@@ -274,9 +277,9 @@ function App() {
     fetch("/api/account/preferences", {
       method: "POST",
       headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ favoritePlayerIds, favoriteMatchIds, preferredTour: tour }),
+      body: JSON.stringify({ favoritePlayerIds, favoriteMatchIds, preferredTour: tour, notificationSettings }),
     }).catch(() => {});
-  }, [authToken, currentUser, preferencesReady, favoritePlayerIds, favoriteMatchIds, tour]);
+  }, [authToken, currentUser, preferencesReady, favoritePlayerIds, favoriteMatchIds, tour, notificationSettings]);
 
   useEffect(() => {
     window.localStorage.setItem("tennisAlerts", JSON.stringify(alerts));
@@ -284,27 +287,29 @@ function App() {
 
   useEffect(() => {
     if (!events?.matches) return;
-    const nextStates = new Map(events.matches.map((match) => [match.id, match.state]));
-    if (previousMatchStates.current.size > 0) {
-      const newAlerts = [];
-      for (const match of events.matches) {
-        const previousState = previousMatchStates.current.get(match.id);
-        const isFavorite = favoriteMatchIds.includes(match.id) || match.competitors.some((competitor) => favoritePlayerIds.includes(competitor.id));
-        if (!isFavorite || !previousState || previousState === match.state) continue;
-        let title = "Partida atualizada";
-        if (match.state === "in") title = "Sua partida começou";
-        if (match.state === "post") title = "Sua partida terminou";
-        const body = match.competitors.map((competitor) => competitor.name).join(" × ");
-        const alert = { id: `${match.id}-${match.state}-${Date.now()}`, matchId: match.id, title, body, createdAt: new Date().toISOString(), read: false };
-        newAlerts.push(alert);
-        if (browserNotifications && typeof Notification !== "undefined" && Notification.permission === "granted") {
-          new Notification(title, { body, tag: `tennis-${match.id}` });
-        }
+    const nextStates = new Map(events.matches.map((match) => [match.id, { state: match.state, date: match.date }]));
+    const newAlerts = [];
+    for (const match of events.matches) {
+      const previous = previousMatchStates.current.get(match.id);
+      const isFavorite = currentUser && (favoriteMatchIds.includes(match.id) || match.competitors.some((competitor) => favoritePlayerIds.includes(competitor.id)));
+      if (!isFavorite) continue;
+      const body = match.competitors.map((competitor) => competitor.name).join(" × ");
+      const candidates = [];
+      const minutesUntil = (new Date(match.date).getTime() - Date.now()) / 60000;
+      if (match.state === "pre" && minutesUntil >= 0 && minutesUntil <= 30 && notificationSettings.beforeMatch) candidates.push([`${match.id}-before`, "Sua partida começa em breve"]);
+      if (previous && previous.state !== match.state && match.state === "in" && notificationSettings.matchStart) candidates.push([`${match.id}-start`, "Sua partida começou"]);
+      if (previous && previous.state !== match.state && match.state === "post" && notificationSettings.matchEnd) candidates.push([`${match.id}-end`, "Sua partida terminou"]);
+      if (previous && previous.state === "pre" && match.state === "pre" && previous.date !== match.date && notificationSettings.scheduleChange) candidates.push([`${match.id}-schedule-${match.date}`, "Horário da partida alterado"]);
+      for (const [id, title] of candidates) {
+        if (deliveredAlertIds.current.has(id)) continue;
+        deliveredAlertIds.current.add(id);
+        newAlerts.push({ id, matchId: match.id, title, body, createdAt: new Date().toISOString(), read: false });
+        if (browserNotifications && typeof Notification !== "undefined" && Notification.permission === "granted") new Notification(title, { body, tag: `tennis-${id}` });
       }
-      if (newAlerts.length) setAlerts((current) => [...newAlerts, ...current].slice(0, 30));
     }
+    if (newAlerts.length) setAlerts((current) => [...newAlerts, ...current].slice(0, 30));
     previousMatchStates.current = nextStates;
-  }, [events, favoriteMatchIds, favoritePlayerIds, browserNotifications]);
+  }, [events, favoriteMatchIds, favoritePlayerIds, browserNotifications, currentUser, notificationSettings]);
 
   useEffect(() => {
     if (!selectedMatchId && !selectedPlayerId) return undefined;
@@ -520,6 +525,7 @@ function App() {
     setFavoritePlayerIds([]);
     setFavoriteMatchIds([]);
     setTour("ATP");
+    setNotificationSettings({ beforeMatch: true, matchStart: true, scheduleChange: true, matchEnd: true });
     setAccountOpen(false);
   };
   const submitAccount = async (event) => {
@@ -618,6 +624,10 @@ function App() {
               <div><strong>{favoritePlayerIds.length}</strong><span>Jogadores favoritos</span></div>
               <div><strong>{favoriteMatchIds.length}</strong><span>Partidas favoritas</span></div>
               <div><strong>{tour}</strong><span>Circuito preferido</span></div>
+            </div>
+            <div className="notification-preferences">
+              <div className="password-section"><strong>Notificações de favoritos</strong><small>Escolha quais acontecimentos devem gerar alertas.</small></div>
+              {[["beforeMatch", "30 minutos antes"], ["matchStart", "Início da partida"], ["scheduleChange", "Mudança de horário"], ["matchEnd", "Resultado final"]].map(([key, label]) => <label className="setting-toggle" key={key}><span>{label}</span><input type="checkbox" checked={notificationSettings[key]} onChange={(event) => setNotificationSettings((current) => ({ ...current, [key]: event.target.checked }))} /></label>)}
             </div>
             <form className="auth-form account-form" onSubmit={submitAccount}>
               <label><span>Nome</span><input name="name" required minLength="2" defaultValue={currentUser.name} autoComplete="name" /></label>

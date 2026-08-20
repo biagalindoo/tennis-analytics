@@ -138,6 +138,19 @@ test('updates profile and password from the account panel', async () => {
   expect(global.fetch).toHaveBeenCalledWith('/api/account/profile', expect.objectContaining({ method: 'POST' }));
 });
 
+test('saves notification preferences for the account', async () => {
+  accountPreferences = { initialized: true, favoritePlayerIds: [], favoriteMatchIds: [], preferredTour: 'ATP', notificationSettings: { beforeMatch: true, matchStart: true, scheduleChange: true, matchEnd: true } };
+  window.localStorage.setItem('tennisAuthToken', 'session-token');
+  render(<App />);
+  fireEvent.click(await screen.findByRole('button', { name: /Bia.*Minha conta/i }));
+
+  fireEvent.click(screen.getByLabelText('30 minutos antes'));
+  await waitFor(() => expect(global.fetch).toHaveBeenCalledWith('/api/account/preferences', expect.objectContaining({
+    method: 'POST',
+    body: expect.stringContaining('"beforeMatch":false'),
+  })));
+});
+
 test('switches from login to account registration', async () => {
   render(<App />);
   await screen.findAllByText(/Jannik Sinner × Carlos Alcaraz/);

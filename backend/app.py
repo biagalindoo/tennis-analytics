@@ -57,6 +57,7 @@ class PreferencePayload(BaseModel):
     favoritePlayerIds: list[str] = Field(default_factory=list, max_length=500)
     favoriteMatchIds: list[str] = Field(default_factory=list, max_length=500)
     preferredTour: str = Field(default="ATP", pattern="^(ATP|WTA)$")
+    notificationSettings: dict[str, bool] = Field(default_factory=lambda: {"beforeMatch": True, "matchStart": True, "scheduleChange": True, "matchEnd": True})
 
 
 class AccountUpdatePayload(BaseModel):
@@ -95,6 +96,9 @@ def _initialize_auth_tables() -> None:
             );
             """
         )
+        preference_columns = {row[1] for row in connection.execute("PRAGMA table_info(user_preferences)").fetchall()}
+        if "notification_settings_json" not in preference_columns:
+            connection.execute("ALTER TABLE user_preferences ADD COLUMN notification_settings_json TEXT NOT NULL DEFAULT '{}' ")
         connection.commit()
     finally:
         connection.close()
@@ -240,18 +244,19 @@ def account_preferences(authorization: Optional[str] = Header(default=None)) -> 
     connection.row_factory = sqlite3.Row
     try:
         row = connection.execute(
-            "SELECT favorite_player_ids_json, favorite_match_ids_json, preferred_tour, updated_at FROM user_preferences WHERE user_id = ?",
+            "SELECT favorite_player_ids_json, favorite_match_ids_json, preferred_tour, notification_settings_json, updated_at FROM user_preferences WHERE user_id = ?",
             (user["user_id"],),
         ).fetchone()
     finally:
         connection.close()
     if not row:
-        return {"initialized": False, "favoritePlayerIds": [], "favoriteMatchIds": [], "preferredTour": "ATP"}
+        return {"initialized": False, "favoritePlayerIds": [], "favoriteMatchIds": [], "preferredTour": "ATP", "notificationSettings": {"beforeMatch": True, "matchStart": True, "scheduleChange": True, "matchEnd": True}}
     return {
         "initialized": True,
         "favoritePlayerIds": json.loads(row["favorite_player_ids_json"]),
         "favoriteMatchIds": json.loads(row["favorite_match_ids_json"]),
         "preferredTour": row["preferred_tour"],
+        "notificationSettings": {"beforeMatch": True, "matchStart": True, "scheduleChange": True, "matchEnd": True, **json.loads(row["notification_settings_json"] or "{}")},
         "updatedAt": row["updated_at"],
     }
 
@@ -266,20 +271,21 @@ def save_account_preferences(payload: PreferencePayload, authorization: Optional
     try:
         connection.execute(
             """
-            INSERT INTO user_preferences (user_id, favorite_player_ids_json, favorite_match_ids_json, preferred_tour, updated_at)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO user_preferences (user_id, favorite_player_ids_json, favorite_match_ids_json, preferred_tour, notification_settings_json, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT(user_id) DO UPDATE SET
                 favorite_player_ids_json = excluded.favorite_player_ids_json,
                 favorite_match_ids_json = excluded.favorite_match_ids_json,
                 preferred_tour = excluded.preferred_tour,
+                notification_settings_json = excluded.notification_settings_json,
                 updated_at = excluded.updated_at
             """,
-            (user["user_id"], json.dumps(player_ids), json.dumps(match_ids), payload.preferredTour, now),
+            (user["user_id"], json.dumps(player_ids), json.dumps(match_ids), payload.preferredTour, json.dumps(payload.notificationSettings), now),
         )
         connection.commit()
     finally:
         connection.close()
-    return {"saved": True, "favoritePlayerIds": player_ids, "favoriteMatchIds": match_ids, "preferredTour": payload.preferredTour, "updatedAt": now}
+    return {"saved": True, "favoritePlayerIds": player_ids, "favoriteMatchIds": match_ids, "preferredTour": payload.preferredTour, "notificationSettings": payload.notificationSettings, "updatedAt": now}
 
 
 @app.post("/api/account/profile", tags=["Conta"])

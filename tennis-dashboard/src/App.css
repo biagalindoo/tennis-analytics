@@ -81,6 +81,10 @@
 .password-section small { color: var(--muted); }
 .account-message { margin: 0; padding: 10px 12px; border-radius: 10px; background: rgba(143, 191, 115, 0.13); color: var(--accent); font-size: 13px; }
 .account-logout { width: 100%; margin-top: 12px; border: 1px solid rgba(224, 122, 122, 0.45); border-radius: 12px; background: transparent; color: #e07a7a; padding: 11px; cursor: pointer; font-weight: 800; }
+.notification-preferences { display: grid; gap: 2px; margin-bottom: 20px; }
+.notification-preferences .password-section { margin-bottom: 6px; }
+.setting-toggle { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 9px 2px; color: var(--text); font-size: 13px; font-weight: 700; }
+.setting-toggle input { width: 38px; height: 21px; accent-color: var(--accent); cursor: pointer; }
 
 .notification-button b {
   position: absolute;
