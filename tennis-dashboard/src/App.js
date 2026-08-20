@@ -29,11 +29,29 @@ function normalizeSearchValue(value) {
     .toLowerCase();
 }
 
+function formatMatchDate(iso) {
+  if (!iso) return "Horário a definir";
+  return new Date(iso).toLocaleString("pt-BR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function setScore(sets = []) {
+  return sets.map((set) => set.value).join("  ") || "—";
+}
+
 function App() {
   const [payload, setPayload] = useState(null);
   const [error, setError] = useState("");
   const [tour, setTour] = useState("ATP");
   const [query, setQuery] = useState("");
+  const [view, setView] = useState("ranking");
+  const [events, setEvents] = useState(null);
+  const [matchFilter, setMatchFilter] = useState("all");
 
   useEffect(() => {
     fetch("/data/rankings.json")
@@ -45,6 +63,25 @@ function App() {
       })
       .then(setPayload)
       .catch((err) => setError(err.message));
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const loadEvents = () => {
+      fetch(`/data/events.json?ts=${Date.now()}`)
+        .then((response) => {
+          if (!response.ok) throw new Error("Eventos ainda não foram gerados pelo ETL.");
+          return response.json();
+        })
+        .then((data) => active && setEvents(data))
+        .catch(() => active && setEvents(null));
+    };
+    loadEvents();
+    const interval = window.setInterval(loadEvents, 60000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
   }, []);
 
   const tourData = payload?.tours?.[tour];
@@ -60,6 +97,14 @@ function App() {
   }, [tourData, query]);
 
   const featuredPlayers = players.slice(0, 3);
+  const tourMatches = useMemo(() => {
+    const list = (events?.matches || []).filter((match) => match.tour === tour);
+    if (matchFilter === "all") return list.filter((match) => match.state !== "post").slice(0, 40);
+    return list.filter((match) => match.state === matchFilter).slice(0, 40);
+  }, [events, tour, matchFilter]);
+  const liveCount = (events?.matches || []).filter(
+    (match) => match.tour === tour && match.state === "in"
+  ).length;
 
   return (
     <div className="app">
@@ -77,6 +122,13 @@ function App() {
         </div>
       </header>
 
+      <nav className="view-tabs" aria-label="Seções">
+        <button className={view === "ranking" ? "active" : ""} onClick={() => setView("ranking")}>Ranking</button>
+        <button className={view === "matches" ? "active" : ""} onClick={() => setView("matches")}>
+          Torneios e partidas {liveCount > 0 && <span className="live-pill">{liveCount} ao vivo</span>}
+        </button>
+      </nav>
+
       <section className="toolbar">
         <div className="toggles" role="tablist" aria-label="Circuito">
           {["ATP", "WTA"].map((name) => (
@@ -92,19 +144,21 @@ function App() {
             </button>
           ))}
         </div>
-        <input
-          type="search"
-          placeholder="Buscar jogador ou país"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          aria-label="Buscar jogador ou país"
-        />
+        {view === "ranking" && (
+          <input
+            type="search"
+            placeholder="Buscar jogador ou país"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            aria-label="Buscar jogador ou país"
+          />
+        )}
       </section>
 
       {error && <div className="banner error">{error}</div>}
       {!error && !payload && <div className="banner">Carregando ranking...</div>}
 
-      {tourData && (
+      {view === "ranking" && tourData && (
         <>
           <section className="podium">
             {featuredPlayers.map((player) => (
@@ -165,6 +219,52 @@ function App() {
             )}
           </section>
         </>
+      )}
+
+      {view === "matches" && (
+        <section className="matches-view">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Placar em tempo real</p>
+              <h2>Torneios e partidas</h2>
+            </div>
+            <span className="events-updated">Atualizado em {formatUpdated(events?.generatedAt)}</span>
+          </div>
+
+          <div className="match-filters" aria-label="Status das partidas">
+            {[["all", "Agora e próximas"], ["in", "Ao vivo"], ["pre", "Próximas"], ["post", "Finalizadas"]].map(([value, label]) => (
+              <button key={value} className={matchFilter === value ? "active" : ""} onClick={() => setMatchFilter(value)}>{label}</button>
+            ))}
+          </div>
+
+          {!events && <div className="banner">Execute o ETL para carregar torneios e partidas.</div>}
+          {events && tourMatches.length === 0 && <div className="banner">Nenhuma partida nesta categoria agora.</div>}
+
+          <div className="matches-list">
+            {tourMatches.map((match) => (
+              <article className={`match-card state-${match.state}`} key={match.id}>
+                <div className="match-topline">
+                  <div>
+                    <strong>{match.tournament}</strong>
+                    <span>{match.round || match.discipline}</span>
+                  </div>
+                  <span className="match-status">
+                    {match.state === "in" && <i />} {match.state === "in" ? match.detail || "Ao vivo" : match.state === "post" ? "Final" : formatMatchDate(match.date)}
+                  </span>
+                </div>
+                <div className="competitors">
+                  {match.competitors.map((player) => (
+                    <div className={player.winner ? "competitor winner" : "competitor"} key={player.id || player.name}>
+                      <span className="competitor-name">{player.flag && <img src={player.flag} alt="" />} {player.name}</span>
+                      <strong>{setScore(player.sets)}</strong>
+                    </div>
+                  ))}
+                </div>
+                <p className="match-location">{[match.discipline, match.venue, match.court].filter(Boolean).join(" · ")}</p>
+              </article>
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

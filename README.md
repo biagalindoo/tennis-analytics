@@ -24,3 +24,20 @@ Projeto de Business Intelligence para acompanhar o circuito profissional de tên
 5. Criar dashboard no Power BI.
 
 ## 📂 Estrutura do projeto
+
+## Executar o dashboard
+
+Em dois terminais, execute:
+
+```bash
+cd tennis-dashboard
+npm start
+```
+
+```bash
+python3 src/get_live_matches.py --watch
+```
+
+O coletor atualiza torneios e placares a cada 60 segundos, e o dashboard busca o
+novo arquivo automaticamente no mesmo intervalo. Para atualizar rankings e eventos
+uma única vez, execute `python3 etl_update.py`.

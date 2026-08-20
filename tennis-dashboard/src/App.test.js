@@ -13,9 +13,26 @@ const ranking = {
   },
 };
 
+const events = {
+  generatedAt: '2026-08-20T15:00:00Z',
+  matches: [
+    {
+      id: 'match-1', tournament: 'Cincinnati Open', tour: 'ATP', discipline: "Men's Singles",
+      round: 'Semifinal', state: 'in', detail: '2º set', venue: 'Cincinnati, USA', court: 'Center Court',
+      competitors: [
+        { id: '1', name: 'Jannik Sinner', flag: '', winner: false, sets: [{ value: 6 }, { value: 2 }] },
+        { id: '2', name: 'Carlos Alcaraz', flag: '', winner: false, sets: [{ value: 4 }, { value: 3 }] },
+      ],
+    },
+  ],
+};
+
 beforeEach(() => {
-  global.fetch = jest.fn(() =>
-    Promise.resolve({ ok: true, json: () => Promise.resolve(ranking) })
+  global.fetch = jest.fn((url) =>
+    Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(String(url).includes('events.json') ? events : ranking),
+    })
   );
 });
 
@@ -42,4 +59,14 @@ test('filters visible players by name or country without requiring accents', asy
   fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'italia' } });
   expect(screen.getAllByText('Jannik Sinner')).toHaveLength(2);
   expect(screen.queryByText('Carlos Alcaraz')).not.toBeInTheDocument();
+});
+
+test('shows live tournament scores in the matches view', async () => {
+  render(<App />);
+
+  fireEvent.click(await screen.findByRole('button', { name: /Torneios e partidas/i }));
+
+  expect(await screen.findByText('Cincinnati Open')).toBeInTheDocument();
+  expect(screen.getByText('2º set')).toBeInTheDocument();
+  expect(screen.getByText('Center Court', { exact: false })).toBeInTheDocument();
 });
