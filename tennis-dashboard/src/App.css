@@ -679,6 +679,33 @@ th {
   font-size: 20px;
 }
 
+.profile-record {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.profile-record > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #102b17;
+  text-align: center;
+}
+
+.profile-record span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.profile-record strong {
+  color: var(--accent);
+  font-size: 18px;
+}
+
 .profile-stats strong.up {
   color: #8fbf73;
 }
@@ -980,6 +1007,24 @@ th {
   font-size: 13px;
 }
 
+.tournament-card .tournament-winner {
+  flex: 0;
+  width: 100%;
+  margin-top: -8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #102b17;
+  color: var(--text);
+}
+
+.tournament-winner strong {
+  color: var(--accent);
+}
+
+.tournament-winner span {
+  color: var(--muted);
+}
+
 .tournament-card > div {
   display: flex;
   width: 100%;
@@ -1051,6 +1096,10 @@ th {
   }
 
   .profile-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .profile-record {
     grid-template-columns: repeat(2, 1fr);
   }
 

@@ -123,6 +123,7 @@ function App() {
   const [tournamentArchive, setTournamentArchive] = useState(null);
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [archivedMatches, setArchivedMatches] = useState([]);
+  const [remotePlayerMatches, setRemotePlayerMatches] = useState(null);
   const [comparePlayerIds, setComparePlayerIds] = useState(["", ""]);
   const [favoriteMatchIds, setFavoriteMatchIds] = useState(() => {
     try {
@@ -219,7 +220,7 @@ function App() {
     if (matchFilter === "favorites") return list.filter((match) => favoriteMatchIds.includes(match.id));
     return list.filter((match) => match.state === matchFilter).slice(0, 40);
   }, [events, tour, matchFilter, favoriteMatchIds]);
-  const selectedMatch = [...(events?.matches || []), ...archivedMatches].find((match) => match.id === selectedMatchId);
+  const selectedMatch = [...(events?.matches || []), ...archivedMatches, ...(remotePlayerMatches?.matches || [])].find((match) => match.id === selectedMatchId);
   useEffect(() => {
     if (!selectedMatch || selectedMatch.competitors.length < 2) {
       setRemoteHeadToHead(null);
@@ -237,6 +238,17 @@ function App() {
   }, [selectedMatch]);
   const allPlayers = Object.values(payload?.tours || {}).flatMap((item) => item.players || []);
   const selectedPlayer = allPlayers.find((player) => player.athleteId === selectedPlayerId) || selectedPlayerFallback;
+  useEffect(() => {
+    if (!selectedPlayer) {
+      setRemotePlayerMatches(null);
+      return;
+    }
+    const params = new URLSearchParams({ name: selectedPlayer.player, limit: "100" });
+    fetch(`/api/players/${tour}/${encodeURIComponent(selectedPlayer.athleteId)}/matches?${params}`)
+      .then((response) => response.ok ? response.json() : null)
+      .then(setRemotePlayerMatches)
+      .catch(() => setRemotePlayerMatches(null));
+  }, [selectedPlayer, tour]);
   const openPlayerProfile = (competitor) => {
     const competitorName = normalizeSearchValue(competitor.name);
     const rankedPlayer = allPlayers.find(
@@ -278,6 +290,9 @@ function App() {
       )
     ).slice(0, 8);
   }, [events, selectedPlayer]);
+  const playerHistoricalMatches = remotePlayerMatches?.matches || selectedPlayerMatches;
+  const playerFinishedMatches = playerHistoricalMatches.filter((match) => match.state === "post");
+  const playerHistoricalWins = playerFinishedMatches.filter((match) => competitorForPlayer(match, selectedPlayer)?.winner).length;
   const selectedPlayerHistory = selectedPlayer
     ? rankingHistory?.players?.[`${tour}:${selectedPlayer.athleteId}`]?.history || []
     : [];
@@ -558,6 +573,7 @@ function App() {
                 <span className="tournament-year">{tournament.major ? "Grand Slam" : tournament.tours?.join(" · ")}</span>
                 <h3>{tournament.name}</h3>
                 <p>{formatMatchDate(tournament.startDate)} — {tournament.endDate ? new Date(tournament.endDate).toLocaleDateString("pt-BR") : "—"}</p>
+                {tournament.champion && <p className="tournament-winner"><strong>Campeão:</strong> {tournament.champion}<br /><span>Vice: {tournament.runnerUp || "—"}</span></p>}
                 <div><span>{tournament.matchCount || 0} partidas</span><strong>Ver torneio →</strong></div>
               </button>
             ))}
@@ -641,13 +657,20 @@ function App() {
               <RankingHistoryChart history={selectedPlayerHistory} />
             </div>
 
+            <div className="profile-record">
+              <div><span>Partidas arquivadas</span><strong>{playerHistoricalMatches.length}</strong></div>
+              <div><span>Vitórias</span><strong>{playerHistoricalWins}</strong></div>
+              <div><span>Derrotas</span><strong>{Math.max(playerFinishedMatches.length - playerHistoricalWins, 0)}</strong></div>
+              <div><span>Aproveitamento</span><strong>{playerFinishedMatches.length ? `${Math.round((playerHistoricalWins / playerFinishedMatches.length) * 100)}%` : "—"}</strong></div>
+            </div>
+
             <div className="profile-matches">
               <div className="profile-section-title">
-                <h3>Partidas no torneio atual</h3>
-                <span>{selectedPlayerMatches.length} encontradas</span>
+                <h3>Histórico de partidas</h3>
+                <span>{playerHistoricalMatches.length} encontradas</span>
               </div>
-              {selectedPlayerMatches.length === 0 && <p className="empty profile-empty">Nenhuma partida deste jogador no feed atual.</p>}
-              {selectedPlayerMatches.map((match) => {
+              {playerHistoricalMatches.length === 0 && <p className="empty profile-empty">Nenhuma partida armazenada para este jogador.</p>}
+              {playerHistoricalMatches.slice(0, 50).map((match) => {
                 const opponent = match.competitors.find((competitor) => !normalizeSearchValue(competitor.name).includes(normalizeSearchValue(selectedPlayer.player)));
                 const playerRow = match.competitors.find((competitor) => normalizeSearchValue(competitor.name).includes(normalizeSearchValue(selectedPlayer.player)));
                 return (

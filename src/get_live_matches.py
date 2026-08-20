@@ -103,6 +103,7 @@ def _parse_scoreboard(payload: dict) -> dict:
                 "name": event.get("name") or "Torneio",
                 "startDate": event.get("date"),
                 "endDate": event.get("endDate"),
+                "year": (event.get("season") or {}).get("year"),
                 "major": bool(event.get("major")),
                 "tours": sorted(tours),
                 "matchCount": len(event_matches),
@@ -196,7 +197,7 @@ def _store_match_history(payload: dict) -> Path:
         updated_at = datetime.now(timezone.utc).isoformat()
         for tournament in payload.get("tournaments") or []:
             start_date = tournament.get("startDate")
-            year = int(start_date[:4]) if start_date else None
+            year = tournament.get("year") or (int(start_date[:4]) if start_date else None)
             connection.execute(
                 """
                 INSERT INTO tournament_history
