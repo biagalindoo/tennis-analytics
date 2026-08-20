@@ -83,6 +83,8 @@ beforeEach(() => {
   window.localStorage.clear();
   accountPreferences = { initialized: false, favoritePlayerIds: [], favoriteMatchIds: [], preferredTour: 'ATP' };
   global.fetch = jest.fn((url, options = {}) => {
+    if (String(url).includes('/api/auth/forgot-password')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ message: 'Código gerado.', developmentToken: 'development-reset-token-123456789' }) });
+    if (String(url).includes('/api/auth/reset-password')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ saved: true, message: 'Senha redefinida.' }) });
     if (String(url).includes('/api/auth/login')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ token: 'session-token', user: { id: 'user-1', name: 'Bia', email: 'bia@example.com' } }) });
     if (String(url).includes('/api/auth/register')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ token: 'new-session-token', user: { id: 'user-2', name: 'Beatriz', email: 'beatriz@example.com' } }) });
     if (String(url).includes('/api/auth/logout')) return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
@@ -187,6 +189,23 @@ test('switches from login to account registration', async () => {
   expect(screen.getByRole('dialog', { name: 'Crie sua conta' })).toBeInTheDocument();
   expect(screen.getByLabelText('Nome')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Criar conta' })).toBeInTheDocument();
+});
+
+test('recovers a password with a short-lived development token', async () => {
+  render(<App />);
+  await screen.findAllByText(/Jannik Sinner × Carlos Alcaraz/);
+  fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Esqueci minha senha' }));
+
+  fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'bia@example.com' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Gerar código' }));
+  const resetDialog = await screen.findByRole('dialog', { name: 'Nova senha' });
+
+  fireEvent.change(within(resetDialog).getByLabelText('Nova senha'), { target: { value: 'nova-senha-segura' } });
+  fireEvent.change(within(resetDialog).getByLabelText('Confirmar nova senha'), { target: { value: 'nova-senha-segura' } });
+  fireEvent.click(within(resetDialog).getByRole('button', { name: 'Redefinir senha' }));
+  expect(await screen.findByText('Senha redefinida. Entre com a nova senha.')).toBeInTheDocument();
+  expect(screen.getByRole('dialog', { name: 'Bem-vinda de volta' })).toBeInTheDocument();
 });
 
 test('restores favorites and tour preference from the signed-in account', async () => {

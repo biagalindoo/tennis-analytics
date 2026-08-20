@@ -150,6 +150,7 @@ function App() {
   const [authMode, setAuthMode] = useState("login");
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [recoveryToken, setRecoveryToken] = useState("");
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [accountLoading, setAccountLoading] = useState(false);
@@ -510,10 +511,16 @@ function App() {
     setAuthLoading(true);
     setAuthError("");
     const fields = new FormData(event.currentTarget);
-    const body = { email: fields.get("email"), password: fields.get("password") };
+    if (authMode === "reset" && fields.get("newPassword") !== fields.get("confirmPassword")) {
+      setAuthError("As senhas não coincidem.");
+      setAuthLoading(false);
+      return;
+    }
+    const endpoint = authMode === "forgot" ? "forgot-password" : authMode === "reset" ? "reset-password" : authMode;
+    const body = authMode === "forgot" ? { email: fields.get("email") } : authMode === "reset" ? { token: recoveryToken, newPassword: fields.get("newPassword") } : { email: fields.get("email"), password: fields.get("password") };
     if (authMode === "register") body.name = fields.get("name");
     try {
-      const response = await fetch(`/api/auth/${authMode}`, {
+      const response = await fetch(`/api/auth/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
@@ -521,6 +528,22 @@ function App() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || "Não foi possível entrar.");
+      if (authMode === "forgot") {
+        if (data.developmentToken) {
+          setRecoveryToken(data.developmentToken);
+          setAuthMode("reset");
+          setAuthError("");
+        } else {
+          setAuthError(data.message);
+        }
+        return;
+      }
+      if (authMode === "reset") {
+        setRecoveryToken("");
+        setAuthMode("login");
+        setAuthError("Senha redefinida. Entre com a nova senha.");
+        return;
+      }
       window.localStorage.removeItem("tennisAuthToken");
       window.localStorage.setItem("tennisHasSession", "true");
       setPreferencesReady(false);
@@ -633,18 +656,20 @@ function App() {
         <div className="modal-backdrop auth-backdrop" role="presentation" onMouseDown={() => setAuthOpen(false)}>
           <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" onMouseDown={(event) => event.stopPropagation()}>
             <div className="modal-header">
-              <div><p className="eyebrow">Sua conta</p><h2 id="auth-title">{authMode === "login" ? "Bem-vinda de volta" : "Crie sua conta"}</h2></div>
+              <div><p className="eyebrow">Sua conta</p><h2 id="auth-title">{authMode === "login" ? "Bem-vinda de volta" : authMode === "register" ? "Crie sua conta" : authMode === "forgot" ? "Recuperar senha" : "Nova senha"}</h2></div>
               <button className="close-button" type="button" onClick={() => setAuthOpen(false)} aria-label="Fechar login">×</button>
             </div>
-            <p className="auth-intro">Entre para manter sua experiência preparada para sincronizar favoritos e alertas em qualquer dispositivo.</p>
+            <p className="auth-intro">{authMode === "forgot" ? "Informe seu e-mail para gerar um código de recuperação válido por 20 minutos." : authMode === "reset" ? "Código local validado. Escolha uma nova senha para sua conta." : "Entre para sincronizar favoritos e alertas em qualquer dispositivo."}</p>
             <form className="auth-form" onSubmit={submitAuth}>
               {authMode === "register" && <label><span>Nome</span><input name="name" required minLength="2" autoComplete="name" placeholder="Como podemos chamar você?" /></label>}
-              <label><span>E-mail</span><input name="email" type="email" required autoComplete="email" placeholder="voce@email.com" /></label>
-              <label><span>Senha</span><input name="password" type="password" required minLength="8" autoComplete={authMode === "login" ? "current-password" : "new-password"} placeholder="Mínimo de 8 caracteres" /></label>
+              {authMode !== "reset" && <label><span>E-mail</span><input name="email" type="email" required autoComplete="email" placeholder="voce@email.com" /></label>}
+              {(authMode === "login" || authMode === "register") && <label><span>Senha</span><input name="password" type="password" required minLength="8" autoComplete={authMode === "login" ? "current-password" : "new-password"} placeholder="Mínimo de 8 caracteres" /></label>}
+              {authMode === "reset" && <><label><span>Nova senha</span><input name="newPassword" type="password" required minLength="8" autoComplete="new-password" /></label><label><span>Confirmar nova senha</span><input name="confirmPassword" type="password" required minLength="8" autoComplete="new-password" /></label></>}
               {authError && <p className="auth-error" role="alert">{authError}</p>}
-              <button className="auth-submit" disabled={authLoading}>{authLoading ? "Aguarde..." : authMode === "login" ? "Entrar" : "Criar conta"}</button>
+              <button className="auth-submit" disabled={authLoading}>{authLoading ? "Aguarde..." : authMode === "login" ? "Entrar" : authMode === "register" ? "Criar conta" : authMode === "forgot" ? "Gerar código" : "Redefinir senha"}</button>
             </form>
-            <button className="auth-switch" type="button" onClick={() => { setAuthMode((mode) => mode === "login" ? "register" : "login"); setAuthError(""); }}>{authMode === "login" ? "Ainda não tenho conta" : "Já tenho uma conta"}</button>
+            {authMode === "login" && <button className="auth-switch" type="button" onClick={() => { setAuthMode("forgot"); setAuthError(""); }}>Esqueci minha senha</button>}
+            <button className="auth-switch" type="button" onClick={() => { setAuthMode((mode) => mode === "login" ? "register" : "login"); setAuthError(""); setRecoveryToken(""); }}>{authMode === "login" ? "Ainda não tenho conta" : "Voltar para o login"}</button>
           </section>
         </div>
       )}

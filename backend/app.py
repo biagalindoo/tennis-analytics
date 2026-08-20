@@ -1,6 +1,7 @@
 import json
 import hashlib
 import hmac
+import os
 import secrets
 import sqlite3
 from datetime import datetime, timedelta, timezone
@@ -67,6 +68,20 @@ class AccountUpdatePayload(BaseModel):
     newPassword: Optional[str] = Field(default=None, min_length=8, max_length=128)
 
 
+class ForgotPasswordPayload(BaseModel):
+    email: str = Field(min_length=5, max_length=254)
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: str) -> str:
+        return value.strip().lower()
+
+
+class ResetPasswordPayload(BaseModel):
+    token: str = Field(min_length=20, max_length=200)
+    newPassword: str = Field(min_length=8, max_length=128)
+
+
 def _initialize_auth_tables() -> None:
     HISTORY_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(HISTORY_DB_PATH)
@@ -94,6 +109,21 @@ def _initialize_auth_tables() -> None:
                 failed_at TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_login_attempts_lookup ON login_attempts(email, ip_address, failed_at);
+            CREATE TABLE IF NOT EXISTS password_reset_tokens (
+                token_hash TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                used_at TEXT,
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS password_reset_requests (
+                request_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL COLLATE NOCASE,
+                ip_address TEXT NOT NULL,
+                requested_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_reset_requests_lookup ON password_reset_requests(email, ip_address, requested_at);
             CREATE TABLE IF NOT EXISTS user_preferences (
                 user_id TEXT PRIMARY KEY,
                 favorite_player_ids_json TEXT NOT NULL DEFAULT '[]',
@@ -255,6 +285,54 @@ def login(payload: LoginPayload, request: Request, response: Response) -> dict:
         connection.close()
     response.set_cookie("tennis_session", token, max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=False, path="/")
     return {"expiresAt": expires_at, "user": {"id": user["user_id"], "name": user["name"], "email": user["email"]}}
+
+
+@app.post("/api/auth/forgot-password", tags=["Conta"])
+def forgot_password(payload: ForgotPasswordPayload, request: Request) -> dict:
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    dev_token = None
+    try:
+        ip_address = request.client.host if request.client else "unknown"
+        now = datetime.now(timezone.utc)
+        cutoff = (now - timedelta(minutes=15)).isoformat()
+        connection.execute("DELETE FROM password_reset_requests WHERE requested_at < ?", (cutoff,))
+        count = connection.execute("SELECT COUNT(*) FROM password_reset_requests WHERE email = ? AND ip_address = ? AND requested_at >= ?", (payload.email, ip_address, cutoff)).fetchone()[0]
+        if count >= 3:
+            raise HTTPException(status_code=429, detail="Muitas solicitações. Aguarde 15 minutos.")
+        connection.execute("INSERT INTO password_reset_requests (email, ip_address, requested_at) VALUES (?, ?, ?)", (payload.email, ip_address, now.isoformat()))
+        user = connection.execute("SELECT user_id FROM users WHERE email = ? COLLATE NOCASE", (payload.email,)).fetchone()
+        if user:
+            token = secrets.token_urlsafe(32)
+            connection.execute("DELETE FROM password_reset_tokens WHERE user_id = ?", (user["user_id"],))
+            connection.execute("INSERT INTO password_reset_tokens (token_hash, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)", (_token_hash(token), user["user_id"], (now + timedelta(minutes=20)).isoformat(), now.isoformat()))
+            if os.getenv("APP_ENV", "development") != "production":
+                dev_token = token
+        connection.commit()
+    finally:
+        connection.close()
+    response = {"message": "Se a conta existir, as instruções de recuperação foram geradas."}
+    if dev_token:
+        response["developmentToken"] = dev_token
+    return response
+
+
+@app.post("/api/auth/reset-password", tags=["Conta"])
+def reset_password(payload: ResetPasswordPayload) -> dict:
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        now = datetime.now(timezone.utc).isoformat()
+        reset = connection.execute("SELECT user_id FROM password_reset_tokens WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?", (_token_hash(payload.token), now)).fetchone()
+        if not reset:
+            raise HTTPException(status_code=400, detail="Código inválido ou expirado.")
+        connection.execute("UPDATE users SET password_hash = ? WHERE user_id = ?", (_password_hash(payload.newPassword), reset["user_id"]))
+        connection.execute("UPDATE password_reset_tokens SET used_at = ? WHERE token_hash = ?", (now, _token_hash(payload.token)))
+        connection.execute("DELETE FROM user_sessions WHERE user_id = ?", (reset["user_id"],))
+        connection.commit()
+    finally:
+        connection.close()
+    return {"saved": True, "message": "Senha redefinida. Entre novamente em todos os dispositivos."}
 
 
 @app.get("/api/auth/me", tags=["Conta"])
