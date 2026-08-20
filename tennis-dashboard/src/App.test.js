@@ -68,6 +68,10 @@ const leaders = {
 beforeEach(() => {
   window.localStorage.clear();
   global.fetch = jest.fn((url) => {
+    if (String(url).includes('/api/auth/login')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ token: 'session-token', user: { id: 'user-1', name: 'Bia', email: 'bia@example.com' } }) });
+    if (String(url).includes('/api/auth/register')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ token: 'new-session-token', user: { id: 'user-2', name: 'Beatriz', email: 'beatriz@example.com' } }) });
+    if (String(url).includes('/api/auth/logout')) return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+    if (String(url).includes('/api/auth/me')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ user: { id: 'user-1', name: 'Bia', email: 'bia@example.com' } }) });
     if (String(url).includes('/api/head-to-head')) return new Promise(() => {});
     if (String(url).includes('/api/leaders?')) return Promise.resolve({ ok: true, json: () => Promise.resolve(leaders) });
     if (String(url).includes('/api/tournaments/archive-1/matches')) return Promise.resolve({ ok: true, json: () => Promise.resolve(events) });
@@ -92,6 +96,32 @@ test('renders the personalized today page', async () => {
   const heading = screen.getByText(/Tênis hoje/i);
   expect(heading).toBeInTheDocument();
   await screen.findAllByText(/Jannik Sinner × Carlos Alcaraz/);
+});
+
+test('opens the account modal, signs in and persists the session', async () => {
+  render(<App />);
+  await screen.findAllByText(/Jannik Sinner × Carlos Alcaraz/);
+  fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
+
+  const dialog = screen.getByRole('dialog', { name: 'Bem-vinda de volta' });
+  fireEvent.change(within(dialog).getByLabelText('E-mail'), { target: { value: 'bia@example.com' } });
+  fireEvent.change(within(dialog).getByLabelText('Senha'), { target: { value: 'senha-segura' } });
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Entrar' }));
+
+  expect(await screen.findByRole('button', { name: /Bia.*Sair/i })).toBeInTheDocument();
+  expect(window.localStorage.getItem('tennisAuthToken')).toBe('session-token');
+  expect(global.fetch).toHaveBeenCalledWith('/api/auth/login', expect.objectContaining({ method: 'POST' }));
+});
+
+test('switches from login to account registration', async () => {
+  render(<App />);
+  await screen.findAllByText(/Jannik Sinner × Carlos Alcaraz/);
+  fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Ainda não tenho conta' }));
+
+  expect(screen.getByRole('dialog', { name: 'Crie sua conta' })).toBeInTheDocument();
+  expect(screen.getByLabelText('Nome')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Criar conta' })).toBeInTheDocument();
 });
 
 test('shows only one relevant match per favorite player on the today page', async () => {

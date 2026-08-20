@@ -142,6 +142,12 @@ function App() {
       return [];
     }
   });
+  const [authToken, setAuthToken] = useState(() => window.localStorage.getItem("tennisAuthToken") || "");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
   const previousMatchStates = useRef(new Map());
   const [comparePlayerIds, setComparePlayerIds] = useState(["", ""]);
   const [favoriteMatchIds, setFavoriteMatchIds] = useState(() => {
@@ -164,6 +170,21 @@ function App() {
       .then(setPayload)
       .catch((err) => setError(err.message));
   }, []);
+
+  useEffect(() => {
+    if (!authToken) {
+      setCurrentUser(null);
+      return;
+    }
+    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${authToken}` } })
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then((data) => setCurrentUser(data.user))
+      .catch(() => {
+        window.localStorage.removeItem("tennisAuthToken");
+        setAuthToken("");
+        setCurrentUser(null);
+      });
+  }, [authToken]);
 
   useEffect(() => {
     if (view !== "history") return;
@@ -408,6 +429,37 @@ function App() {
     setNotificationsOpen(opening);
     if (opening) setAlerts((current) => current.map((alert) => ({ ...alert, read: true })));
   };
+  const submitAuth = async (event) => {
+    event.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+    const fields = new FormData(event.currentTarget);
+    const body = { email: fields.get("email"), password: fields.get("password") };
+    if (authMode === "register") body.name = fields.get("name");
+    try {
+      const response = await fetch(`/api/auth/${authMode}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Não foi possível entrar.");
+      window.localStorage.setItem("tennisAuthToken", data.token);
+      setAuthToken(data.token);
+      setCurrentUser(data.user);
+      setAuthOpen(false);
+    } catch (authRequestError) {
+      setAuthError(authRequestError.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+  const logoutUser = () => {
+    if (authToken) fetch("/api/auth/logout", { method: "POST", headers: { Authorization: `Bearer ${authToken}` } }).catch(() => {});
+    window.localStorage.removeItem("tennisAuthToken");
+    setAuthToken("");
+    setCurrentUser(null);
+  };
   const liveCount = (events?.matches || []).filter(
     (match) => match.tour === tour && match.state === "in"
   ).length;
@@ -440,9 +492,32 @@ function App() {
         <div className="meta">
           <span>{tourData?.week || "Temporada 2026"}</span>
           <span>Atualizado em {formatUpdated(tourData?.lastUpdated || payload?.generatedAt)}</span>
-          <button className="notification-button" type="button" aria-label="Abrir notificações" onClick={toggleNotifications}>🔔{unreadAlerts > 0 && <b>{unreadAlerts}</b>}</button>
+          <div className="header-actions">
+            <button className="notification-button" type="button" aria-label="Abrir notificações" onClick={toggleNotifications}>🔔{unreadAlerts > 0 && <b>{unreadAlerts}</b>}</button>
+            {currentUser ? <button className="account-button signed-in" type="button" onClick={logoutUser} title="Sair da conta"><span>{currentUser.name.slice(0, 1).toUpperCase()}</span><b>{currentUser.name}</b><small>Sair</small></button> : <button className="account-button" type="button" onClick={() => { setAuthMode("login"); setAuthError(""); setAuthOpen(true); }}>Entrar</button>}
+          </div>
         </div>
       </header>
+
+      {authOpen && (
+        <div className="modal-backdrop auth-backdrop" role="presentation" onMouseDown={() => setAuthOpen(false)}>
+          <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <div><p className="eyebrow">Sua conta</p><h2 id="auth-title">{authMode === "login" ? "Bem-vinda de volta" : "Crie sua conta"}</h2></div>
+              <button className="close-button" type="button" onClick={() => setAuthOpen(false)} aria-label="Fechar login">×</button>
+            </div>
+            <p className="auth-intro">Entre para manter sua experiência preparada para sincronizar favoritos e alertas em qualquer dispositivo.</p>
+            <form className="auth-form" onSubmit={submitAuth}>
+              {authMode === "register" && <label><span>Nome</span><input name="name" required minLength="2" autoComplete="name" placeholder="Como podemos chamar você?" /></label>}
+              <label><span>E-mail</span><input name="email" type="email" required autoComplete="email" placeholder="voce@email.com" /></label>
+              <label><span>Senha</span><input name="password" type="password" required minLength="8" autoComplete={authMode === "login" ? "current-password" : "new-password"} placeholder="Mínimo de 8 caracteres" /></label>
+              {authError && <p className="auth-error" role="alert">{authError}</p>}
+              <button className="auth-submit" disabled={authLoading}>{authLoading ? "Aguarde..." : authMode === "login" ? "Entrar" : "Criar conta"}</button>
+            </form>
+            <button className="auth-switch" type="button" onClick={() => { setAuthMode((mode) => mode === "login" ? "register" : "login"); setAuthError(""); }}>{authMode === "login" ? "Ainda não tenho conta" : "Já tenho uma conta"}</button>
+          </section>
+        </div>
+      )}
 
       {notificationsOpen && (
         <aside className="notification-panel" aria-label="Central de notificações">

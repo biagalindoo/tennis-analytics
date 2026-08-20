@@ -1,10 +1,15 @@
 import json
+import hashlib
+import hmac
+import secrets
 import sqlite3
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field, field_validator
 
 ROOT = Path(__file__).resolve().parent.parent
 PUBLIC_DATA_DIR = ROOT / "tennis-dashboard" / "public" / "data"
@@ -19,9 +24,117 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+
+class RegisterPayload(BaseModel):
+    name: str = Field(min_length=2, max_length=60)
+    email: str = Field(min_length=5, max_length=254)
+    password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if normalized.count("@") != 1 or "." not in normalized.split("@", 1)[1]:
+            raise ValueError("E-mail inválido.")
+        return normalized
+
+
+class LoginPayload(BaseModel):
+    email: str = Field(min_length=5, max_length=254)
+    password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: str) -> str:
+        return value.strip().lower()
+
+
+def _initialize_auth_tables() -> None:
+    HISTORY_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    try:
+        connection.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                user_id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                password_hash TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS user_sessions (
+                token_hash TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+            );
+            """
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
+def _password_hash(password: str, salt: Optional[bytes] = None) -> str:
+    salt = salt or secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 310_000)
+    return f"pbkdf2_sha256$310000${salt.hex()}${digest.hex()}"
+
+
+def _password_matches(password: str, encoded: str) -> bool:
+    try:
+        algorithm, iterations, salt_hex, expected = encoded.split("$", 3)
+        if algorithm != "pbkdf2_sha256":
+            return False
+        digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), bytes.fromhex(salt_hex), int(iterations))
+        return hmac.compare_digest(digest.hex(), expected)
+    except (TypeError, ValueError):
+        return False
+
+
+def _token_hash(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _new_session(connection: sqlite3.Connection, user_id: str) -> tuple[str, str]:
+    token = secrets.token_urlsafe(32)
+    now = datetime.now(timezone.utc)
+    expires_at = now + timedelta(days=30)
+    connection.execute(
+        "INSERT INTO user_sessions (token_hash, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)",
+        (_token_hash(token), user_id, expires_at.isoformat(), now.isoformat()),
+    )
+    return token, expires_at.isoformat()
+
+
+def _authenticated_user(authorization: Optional[str]) -> dict:
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Sessão não informada.")
+    token = authorization.removeprefix("Bearer ").strip()
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        row = connection.execute(
+            """
+            SELECT users.user_id, users.name, users.email, users.created_at, user_sessions.expires_at
+            FROM user_sessions JOIN users ON users.user_id = user_sessions.user_id
+            WHERE user_sessions.token_hash = ? AND user_sessions.expires_at > ?
+            """,
+            (_token_hash(token), datetime.now(timezone.utc).isoformat()),
+        ).fetchone()
+    finally:
+        connection.close()
+    if not row:
+        raise HTTPException(status_code=401, detail="Sessão inválida ou expirada.")
+    return dict(row)
+
+
+_initialize_auth_tables()
 
 
 def _read_json(filename: str) -> dict:
@@ -42,6 +155,62 @@ def health() -> dict:
         "eventsReady": (PUBLIC_DATA_DIR / "events.json").exists(),
         "historyReady": HISTORY_DB_PATH.exists(),
     }
+
+
+@app.post("/api/auth/register", tags=["Conta"], status_code=201)
+def register(payload: RegisterPayload) -> dict:
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    user_id = secrets.token_urlsafe(12)
+    now = datetime.now(timezone.utc).isoformat()
+    try:
+        connection.execute(
+            "INSERT INTO users (user_id, name, email, password_hash, created_at) VALUES (?, ?, ?, ?, ?)",
+            (user_id, payload.name.strip(), payload.email, _password_hash(payload.password), now),
+        )
+        token, expires_at = _new_session(connection, user_id)
+        connection.commit()
+    except sqlite3.IntegrityError as exc:
+        raise HTTPException(status_code=409, detail="Já existe uma conta com este e-mail.") from exc
+    finally:
+        connection.close()
+    return {"token": token, "expiresAt": expires_at, "user": {"id": user_id, "name": payload.name.strip(), "email": payload.email}}
+
+
+@app.post("/api/auth/login", tags=["Conta"])
+def login(payload: LoginPayload) -> dict:
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        user = connection.execute(
+            "SELECT user_id, name, email, password_hash FROM users WHERE email = ? COLLATE NOCASE",
+            (payload.email,),
+        ).fetchone()
+        if not user or not _password_matches(payload.password, user["password_hash"]):
+            raise HTTPException(status_code=401, detail="E-mail ou senha incorretos.")
+        token, expires_at = _new_session(connection, user["user_id"])
+        connection.commit()
+    finally:
+        connection.close()
+    return {"token": token, "expiresAt": expires_at, "user": {"id": user["user_id"], "name": user["name"], "email": user["email"]}}
+
+
+@app.get("/api/auth/me", tags=["Conta"])
+def current_user(authorization: Optional[str] = Header(default=None)) -> dict:
+    user = _authenticated_user(authorization)
+    return {"user": {"id": user["user_id"], "name": user["name"], "email": user["email"], "createdAt": user["created_at"]}}
+
+
+@app.post("/api/auth/logout", tags=["Conta"], status_code=204)
+def logout(authorization: Optional[str] = Header(default=None)) -> None:
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.removeprefix("Bearer ").strip()
+        connection = sqlite3.connect(HISTORY_DB_PATH)
+        try:
+            connection.execute("DELETE FROM user_sessions WHERE token_hash = ?", (_token_hash(token),))
+            connection.commit()
+        finally:
+            connection.close()
 
 
 @app.get("/api/rankings", tags=["Rankings"])
