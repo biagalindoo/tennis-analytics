@@ -143,6 +143,7 @@ function App() {
       return [];
     }
   });
+  const [toastAlerts, setToastAlerts] = useState([]);
   const [notificationSettings, setNotificationSettings] = useState({ beforeMatch: true, matchStart: true, scheduleChange: true, matchEnd: true });
   const [authToken, setAuthToken] = useState(() => window.localStorage.getItem("tennisAuthToken") || (window.localStorage.getItem("tennisHasSession") === "true" ? "cookie" : ""));
   const [currentUser, setCurrentUser] = useState(null);
@@ -307,6 +308,12 @@ function App() {
   }, [alerts]);
 
   useEffect(() => {
+    if (!toastAlerts.length) return undefined;
+    const timeout = window.setTimeout(() => setToastAlerts((current) => current.slice(1)), 7000);
+    return () => window.clearTimeout(timeout);
+  }, [toastAlerts]);
+
+  useEffect(() => {
     if (!events?.matches) return;
     const nextStates = new Map(events.matches.map((match) => [match.id, { state: match.state, date: match.date }]));
     const newAlerts = [];
@@ -328,7 +335,10 @@ function App() {
         if (browserNotifications && typeof Notification !== "undefined" && Notification.permission === "granted") new Notification(title, { body, tag: `tennis-${id}` });
       }
     }
-    if (newAlerts.length) setAlerts((current) => [...newAlerts, ...current].slice(0, 30));
+    if (newAlerts.length) {
+      setAlerts((current) => [...newAlerts, ...current].slice(0, 30));
+      setToastAlerts((current) => [...current, ...newAlerts].slice(-5));
+    }
     previousMatchStates.current = nextStates;
   }, [events, favoriteMatchIds, favoritePlayerIds, browserNotifications, currentUser, notificationSettings]);
 
@@ -753,6 +763,21 @@ function App() {
           {alerts.length > 0 && <button className="clear-alerts" onClick={() => setAlerts([])}>Limpar notificações</button>}
         </aside>
       )}
+
+      <div className="toast-region" aria-live="polite" aria-label="Novas notificações">
+        {toastAlerts.slice(0, 1).map((alert) => (
+          <article className="match-toast" key={alert.id} role="status">
+            <div className="match-toast-icon" aria-hidden="true">🎾</div>
+            <div className="match-toast-content">
+              <small>Atualização de favorito</small>
+              <strong>{alert.title}</strong>
+              <span>{alert.body}</span>
+              <button type="button" onClick={() => { setToastAlerts((current) => current.slice(1)); setNotificationsOpen(false); setSelectedMatchId(alert.matchId); }}>Ver partida</button>
+            </div>
+            <button className="match-toast-close" type="button" aria-label="Dispensar notificação" onClick={() => setToastAlerts((current) => current.slice(1))}>×</button>
+          </article>
+        ))}
+      </div>
 
       <nav className="view-tabs" aria-label="Seções">
         <button className={view === "today" ? "active" : ""} onClick={() => setView("today")}>Hoje</button>

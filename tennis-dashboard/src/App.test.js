@@ -268,6 +268,24 @@ test('opens the notification center and clears persisted alerts', async () => {
   expect(JSON.parse(window.localStorage.getItem('tennisAlerts'))).toEqual([]);
 });
 
+test('shows a dismissible popup when a favorite match is about to start', async () => {
+  const originalState = events.matches[0].state;
+  const originalDate = events.matches[0].date;
+  events.matches[0].state = 'pre';
+  events.matches[0].date = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+  window.localStorage.setItem('favoriteMatchIds', JSON.stringify(['match-1']));
+  window.localStorage.setItem('tennisAuthToken', 'session-token');
+
+  render(<App />);
+  expect(await screen.findByText('Sua partida começa em breve')).toBeInTheDocument();
+  expect(screen.getByText('Atualização de favorito')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Dispensar notificação' }));
+  expect(screen.queryByText('Sua partida começa em breve')).not.toBeInTheDocument();
+
+  events.matches[0].state = originalState;
+  events.matches[0].date = originalDate;
+});
+
 test('filters visible players by name or country without requiring accents', async () => {
   render(<App />);
 
