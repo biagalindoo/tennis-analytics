@@ -28,6 +28,7 @@ const events = {
 };
 
 beforeEach(() => {
+  window.localStorage.clear();
   global.fetch = jest.fn((url) =>
     Promise.resolve({
       ok: true,
@@ -69,4 +70,16 @@ test('shows live tournament scores in the matches view', async () => {
   expect(await screen.findByText('Cincinnati Open')).toBeInTheDocument();
   expect(screen.getByText('2º set')).toBeInTheDocument();
   expect(screen.getByText('Center Court', { exact: false })).toBeInTheDocument();
+});
+
+test('opens match details and saves a favorite', async () => {
+  render(<App />);
+  fireEvent.click(await screen.findByRole('button', { name: /Torneios e partidas/i }));
+
+  fireEvent.click(await screen.findByText('Cincinnati Open'));
+  expect(screen.getByRole('dialog', { name: 'Cincinnati Open' })).toBeInTheDocument();
+  expect(screen.getAllByText('Semifinal')).toHaveLength(2);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Alternar favorito' }));
+  expect(JSON.parse(window.localStorage.getItem('favoriteMatchIds'))).toEqual(['match-1']);
 });

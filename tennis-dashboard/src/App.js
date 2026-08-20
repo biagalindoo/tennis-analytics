@@ -52,6 +52,14 @@ function App() {
   const [view, setView] = useState("ranking");
   const [events, setEvents] = useState(null);
   const [matchFilter, setMatchFilter] = useState("all");
+  const [selectedMatchId, setSelectedMatchId] = useState(null);
+  const [favoriteMatchIds, setFavoriteMatchIds] = useState(() => {
+    try {
+      return JSON.parse(window.localStorage.getItem("favoriteMatchIds")) || [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     fetch("/data/rankings.json")
@@ -64,6 +72,17 @@ function App() {
       .then(setPayload)
       .catch((err) => setError(err.message));
   }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("favoriteMatchIds", JSON.stringify(favoriteMatchIds));
+  }, [favoriteMatchIds]);
+
+  useEffect(() => {
+    if (!selectedMatchId) return undefined;
+    const closeOnEscape = (event) => event.key === "Escape" && setSelectedMatchId(null);
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [selectedMatchId]);
 
   useEffect(() => {
     let active = true;
@@ -100,8 +119,15 @@ function App() {
   const tourMatches = useMemo(() => {
     const list = (events?.matches || []).filter((match) => match.tour === tour);
     if (matchFilter === "all") return list.filter((match) => match.state !== "post").slice(0, 40);
+    if (matchFilter === "favorites") return list.filter((match) => favoriteMatchIds.includes(match.id));
     return list.filter((match) => match.state === matchFilter).slice(0, 40);
-  }, [events, tour, matchFilter]);
+  }, [events, tour, matchFilter, favoriteMatchIds]);
+  const selectedMatch = (events?.matches || []).find((match) => match.id === selectedMatchId);
+  const toggleFavorite = (matchId) => {
+    setFavoriteMatchIds((current) =>
+      current.includes(matchId) ? current.filter((id) => id !== matchId) : [...current, matchId]
+    );
+  };
   const liveCount = (events?.matches || []).filter(
     (match) => match.tour === tour && match.state === "in"
   ).length;
@@ -232,7 +258,7 @@ function App() {
           </div>
 
           <div className="match-filters" aria-label="Status das partidas">
-            {[["all", "Agora e próximas"], ["in", "Ao vivo"], ["pre", "Próximas"], ["post", "Finalizadas"]].map(([value, label]) => (
+            {[["all", "Agora e próximas"], ["in", "Ao vivo"], ["pre", "Próximas"], ["post", "Finalizadas"], ["favorites", `Favoritos (${favoriteMatchIds.length})`]].map(([value, label]) => (
               <button key={value} className={matchFilter === value ? "active" : ""} onClick={() => setMatchFilter(value)}>{label}</button>
             ))}
           </div>
@@ -242,7 +268,7 @@ function App() {
 
           <div className="matches-list">
             {tourMatches.map((match) => (
-              <article className={`match-card state-${match.state}`} key={match.id}>
+              <article className={`match-card state-${match.state}`} key={match.id} onClick={() => setSelectedMatchId(match.id)} tabIndex="0" onKeyDown={(event) => event.key === "Enter" && setSelectedMatchId(match.id)}>
                 <div className="match-topline">
                   <div>
                     <strong>{match.tournament}</strong>
@@ -251,6 +277,9 @@ function App() {
                   <span className="match-status">
                     {match.state === "in" && <i />} {match.state === "in" ? match.detail || "Ao vivo" : match.state === "post" ? "Final" : formatMatchDate(match.date)}
                   </span>
+                  <button className={favoriteMatchIds.includes(match.id) ? "favorite-button active" : "favorite-button"} type="button" aria-label={favoriteMatchIds.includes(match.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"} onClick={(event) => { event.stopPropagation(); toggleFavorite(match.id); }}>
+                    {favoriteMatchIds.includes(match.id) ? "★" : "☆"}
+                  </button>
                 </div>
                 <div className="competitors">
                   {match.competitors.map((player) => (
@@ -265,6 +294,43 @@ function App() {
             ))}
           </div>
         </section>
+      )}
+
+      {selectedMatch && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={() => setSelectedMatchId(null)}>
+          <section className="match-modal" role="dialog" aria-modal="true" aria-labelledby="match-title" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <p className="eyebrow">{selectedMatch.tour} · {selectedMatch.discipline}</p>
+                <h2 id="match-title">{selectedMatch.tournament}</h2>
+              </div>
+              <div className="modal-actions">
+                <button className={favoriteMatchIds.includes(selectedMatch.id) ? "favorite-button active" : "favorite-button"} onClick={() => toggleFavorite(selectedMatch.id)} aria-label="Alternar favorito">{favoriteMatchIds.includes(selectedMatch.id) ? "★" : "☆"}</button>
+                <button className="close-button" onClick={() => setSelectedMatchId(null)} aria-label="Fechar detalhes">×</button>
+              </div>
+            </div>
+            <div className={`detail-status state-${selectedMatch.state}`}>
+              {selectedMatch.state === "in" ? selectedMatch.detail || "Ao vivo" : selectedMatch.state === "post" ? "Partida finalizada" : formatMatchDate(selectedMatch.date)}
+            </div>
+            <div className="detail-score">
+              {selectedMatch.competitors.map((player) => (
+                <div className={player.winner ? "detail-player winner" : "detail-player"} key={player.id || player.name}>
+                  {player.flag && <img src={player.flag} alt="" />}
+                  <strong>{player.name}</strong>
+                  <div className="set-scores" aria-label={`Placar de ${player.name}`}>
+                    {player.sets.length > 0 ? player.sets.map((set, index) => <span className={set.winner ? "won" : ""} key={index}>{set.value}{set.tiebreak != null && <sup>{set.tiebreak}</sup>}</span>) : <span>—</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <dl className="match-facts">
+              <div><dt>Rodada</dt><dd>{selectedMatch.round || "—"}</dd></div>
+              <div><dt>Data e hora</dt><dd>{formatMatchDate(selectedMatch.date)}</dd></div>
+              <div><dt>Local</dt><dd>{selectedMatch.venue || "—"}</dd></div>
+              <div><dt>Quadra</dt><dd>{selectedMatch.court || "A definir"}</dd></div>
+            </dl>
+          </section>
+        </div>
       )}
     </div>
   );
