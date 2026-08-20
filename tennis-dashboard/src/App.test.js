@@ -51,15 +51,25 @@ const archivedPlayerMatches = [...events.matches, {
 }];
 
 const playerStats = {
+  year: 2026,
   matches: 3, wins: 2, losses: 1, titleCount: 2,
   titles: { 'Grand Slam': 1, '1000': 1, '500': 0, '250': 0, Finals: 0 },
   bySurface: { Hard: { played: 3, wins: 2, losses: 1, winRate: 67 } },
+};
+
+const leaders = {
+  tour: 'ATP', year: 2026, metric: 'titles', count: 2,
+  leaders: [
+    { athleteId: '1', player: 'Jannik Sinner', played: 12, wins: 11, titles: 3, winRate: 92 },
+    { athleteId: '2', player: 'Carlos Alcaraz', played: 10, wins: 8, titles: 2, winRate: 80 },
+  ],
 };
 
 beforeEach(() => {
   window.localStorage.clear();
   global.fetch = jest.fn((url) => {
     if (String(url).includes('/api/head-to-head')) return new Promise(() => {});
+    if (String(url).includes('/api/leaders?')) return Promise.resolve({ ok: true, json: () => Promise.resolve(leaders) });
     if (String(url).includes('/api/tournaments/archive-1/matches')) return Promise.resolve({ ok: true, json: () => Promise.resolve(events) });
     if (String(url).includes('/api/tournaments?')) return Promise.resolve({ ok: true, json: () => Promise.resolve(tournamentArchive) });
     if (String(url).includes('/api/players/ATP/1/matches')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ count: 3, matches: archivedPlayerMatches }) });
@@ -162,8 +172,24 @@ test('opens a player profile with ranking, matches and favorite state', async ()
   expect(await screen.findByText('2 títulos')).toBeInTheDocument();
   expect(screen.getByText('67%')).toBeInTheDocument();
 
+  fireEvent.change(screen.getByLabelText('Temporada das estatísticas'), { target: { value: '2025' } });
+  await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('year=2025')));
+
   fireEvent.click(screen.getByRole('button', { name: 'Alternar jogador favorito' }));
   expect(JSON.parse(window.localStorage.getItem('favoritePlayerIds'))).toEqual(['1']);
+});
+
+test('shows season leaders and changes the performance criterion', async () => {
+  render(<App />);
+  fireEvent.click(screen.getByRole('button', { name: 'Líderes' }));
+
+  expect(await screen.findByText('Top 10 ATP')).toBeInTheDocument();
+  expect(screen.getByText('3 títulos')).toBeInTheDocument();
+  expect(screen.getByText('11V · 1D · 12 jogos')).toBeInTheDocument();
+
+  fireEvent.change(screen.getByLabelText('Critério dos líderes'), { target: { value: 'winRate' } });
+  await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('metric=winRate')));
+  expect(screen.getByText('92%')).toBeInTheDocument();
 });
 
 test('compares two ranked players and shows their head-to-head match', async () => {

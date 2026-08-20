@@ -125,6 +125,10 @@ function App() {
   const [archivedMatches, setArchivedMatches] = useState([]);
   const [remotePlayerMatches, setRemotePlayerMatches] = useState(null);
   const [remotePlayerStats, setRemotePlayerStats] = useState(null);
+  const [playerStatsYear, setPlayerStatsYear] = useState("2026");
+  const [leaderYear, setLeaderYear] = useState("2026");
+  const [leaderMetric, setLeaderMetric] = useState("titles");
+  const [leaderData, setLeaderData] = useState(null);
   const [calendarMonth, setCalendarMonth] = useState(String(new Date().getMonth() + 1));
   const [calendarSurface, setCalendarSurface] = useState("");
   const [calendarCategory, setCalendarCategory] = useState("");
@@ -184,6 +188,16 @@ function App() {
       .then(setCalendarData)
       .catch(() => setCalendarData({ count: 0, tournaments: [] }));
   }, [view, calendarMonth, calendarSurface, calendarCategory, tour]);
+
+  useEffect(() => {
+    if (view !== "leaders") return;
+    setLeaderData(null);
+    const params = new URLSearchParams({ tour, year: leaderYear, metric: leaderMetric, limit: "10" });
+    fetch(`/api/leaders?${params}`)
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then(setLeaderData)
+      .catch(() => setLeaderData({ count: 0, leaders: [] }));
+  }, [view, tour, leaderYear, leaderMetric]);
 
   useEffect(() => {
     fetchJsonWithFallback("/api/ranking-history", "/data/ranking-history.json")
@@ -303,11 +317,12 @@ function App() {
       .then((response) => response.ok ? response.json() : null)
       .then(setRemotePlayerMatches)
       .catch(() => setRemotePlayerMatches(null));
-    fetch(`/api/players/${tour}/${encodeURIComponent(selectedPlayer.athleteId)}/stats?${params}`)
+    const statsParams = new URLSearchParams({ name: selectedPlayer.player, year: playerStatsYear });
+    fetch(`/api/players/${tour}/${encodeURIComponent(selectedPlayer.athleteId)}/stats?${statsParams}`)
       .then((response) => response.ok ? response.json() : null)
       .then(setRemotePlayerStats)
       .catch(() => setRemotePlayerStats(null));
-  }, [selectedPlayer, tour]);
+  }, [selectedPlayer, tour, playerStatsYear]);
   const openPlayerProfile = (competitor) => {
     const competitorName = normalizeSearchValue(competitor.name);
     const rankedPlayer = allPlayers.find(
@@ -417,7 +432,7 @@ function App() {
       <header className="hero">
         <div>
           <p className="eyebrow">Tennis Analytics</p>
-          <h1>{view === "today" ? "Tênis hoje" : view === "ranking" ? "Ranking mundial" : view === "matches" ? "Torneios e partidas" : view === "history" ? "Histórico de torneios" : view === "calendar" ? "Calendário" : "Comparar jogadores"}</h1>
+          <h1>{view === "today" ? "Tênis hoje" : view === "ranking" ? "Ranking mundial" : view === "matches" ? "Torneios e partidas" : view === "history" ? "Histórico de torneios" : view === "calendar" ? "Calendário" : view === "leaders" ? "Líderes da temporada" : "Comparar jogadores"}</h1>
           <p className="lede">
             ATP e WTA atualizados a partir da fonte oficial via ESPN.
           </p>
@@ -440,6 +455,7 @@ function App() {
       <nav className="view-tabs" aria-label="Seções">
         <button className={view === "today" ? "active" : ""} onClick={() => setView("today")}>Hoje</button>
         <button className={view === "ranking" ? "active" : ""} onClick={() => setView("ranking")}>Ranking</button>
+        <button className={view === "leaders" ? "active" : ""} onClick={() => setView("leaders")}>Líderes</button>
         <button className={view === "matches" ? "active" : ""} onClick={() => setView("matches")}>
           Torneios e partidas {liveCount > 0 && <span className="live-pill">{liveCount} ao vivo</span>}
         </button>
@@ -487,6 +503,18 @@ function App() {
             </select>
             <select aria-label="Superfície" value={calendarSurface} onChange={(event) => setCalendarSurface(event.target.value)}><option value="">Todas as superfícies</option>{["Hard", "Clay", "Grass", "Indoor Hard"].map((value) => <option key={value}>{value}</option>)}</select>
             <select aria-label="Categoria" value={calendarCategory} onChange={(event) => setCalendarCategory(event.target.value)}><option value="">Todas as categorias</option>{["Grand Slam", "1000", "500", "250", "Finals"].map((value) => <option key={value}>{value}</option>)}</select>
+          </div>
+        )}
+        {view === "leaders" && (
+          <div className="leader-controls">
+            <select aria-label="Temporada dos líderes" value={leaderYear} onChange={(event) => setLeaderYear(event.target.value)}>
+              {[2026, 2025].map((year) => <option value={year} key={year}>{year}</option>)}
+            </select>
+            <select aria-label="Critério dos líderes" value={leaderMetric} onChange={(event) => setLeaderMetric(event.target.value)}>
+              <option value="titles">Mais títulos</option>
+              <option value="wins">Mais vitórias</option>
+              <option value="winRate">Melhor aproveitamento</option>
+            </select>
           </div>
         )}
       </section>
@@ -687,6 +715,32 @@ function App() {
         </section>
       )}
 
+      {view === "leaders" && (
+        <section className="leaders-view">
+          <div className="section-heading">
+            <div><p className="eyebrow">Temporada {leaderYear}</p><h2>Top 10 {tour}</h2></div>
+            <span className="events-updated">Dados das partidas armazenadas</span>
+          </div>
+          {!leaderData && <div className="banner">Calculando líderes...</div>}
+          {leaderData?.count === 0 && <div className="banner">Ainda não há partidas suficientes nesta temporada.</div>}
+          <div className="leader-list">
+            {(leaderData?.leaders || []).map((leader, index) => {
+              const rankedPlayer = (tourData?.players || []).find((player) => player.athleteId === leader.athleteId || normalizeSearchValue(player.player) === normalizeSearchValue(leader.player));
+              const metricValue = leaderMetric === "titles" ? `${leader.titles} ${leader.titles === 1 ? "título" : "títulos"}` : leaderMetric === "wins" ? `${leader.wins} vitórias` : `${leader.winRate}%`;
+              return (
+                <button className="leader-card" key={leader.athleteId || leader.player} onClick={() => openPlayerProfile({ id: leader.athleteId, name: leader.player })}>
+                  <strong className="leader-position">#{index + 1}</strong>
+                  {rankedPlayer?.headshot ? <img src={rankedPlayer.headshot} alt="" /> : <span className="leader-avatar">{leader.player.slice(0, 1)}</span>}
+                  <span className="leader-name"><strong>{leader.player}</strong><small>{leader.wins}V · {Math.max(leader.played - leader.wins, 0)}D · {leader.played} jogos</small></span>
+                  <b>{metricValue}</b>
+                </button>
+              );
+            })}
+          </div>
+          <p className="data-note">O aproveitamento exige pelo menos 5 partidas armazenadas no ano.</p>
+        </section>
+      )}
+
       {view === "history" && (
         <section className="archive-view">
           <div className="section-heading">
@@ -811,7 +865,13 @@ function App() {
 
             {remotePlayerStats && (
               <div className="career-stats">
-                <div className="profile-section-title"><h3>Títulos no histórico</h3><span>{remotePlayerStats.titleCount} títulos</span></div>
+                <div className="profile-section-title stats-season-heading">
+                  <div><h3>Temporada {playerStatsYear}</h3><span>{remotePlayerStats.wins}V · {remotePlayerStats.losses}D</span></div>
+                  <select aria-label="Temporada das estatísticas" value={playerStatsYear} onChange={(event) => setPlayerStatsYear(event.target.value)}>
+                    {[2026, 2025].map((year) => <option value={year} key={year}>{year}</option>)}
+                  </select>
+                </div>
+                <div className="profile-section-title title-summary"><h3>Títulos</h3><span>{remotePlayerStats.titleCount} títulos</span></div>
                 <div className="title-breakdown">
                   {["Grand Slam", "1000", "500", "250", "Finals"].map((category) => <div key={category}><strong>{remotePlayerStats.titles?.[category] || 0}</strong><span>{category}</span></div>)}
                 </div>

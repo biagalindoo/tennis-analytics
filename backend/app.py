@@ -234,24 +234,29 @@ def archived_player_matches(tour: str, athlete_id: str, name: Optional[str] = No
 
 
 @app.get("/api/players/{tour}/{athlete_id}/stats", tags=["Jogadores"])
-def player_career_stats(tour: str, athlete_id: str, name: Optional[str] = None) -> dict:
+def player_career_stats(tour: str, athlete_id: str, name: Optional[str] = None, year: Optional[int] = None) -> dict:
     tour = tour.upper()
     if tour not in {"ATP", "WTA"}:
         raise HTTPException(status_code=400, detail="Circuito deve ser ATP ou WTA.")
     connection = sqlite3.connect(HISTORY_DB_PATH)
     connection.row_factory = sqlite3.Row
     try:
+        year_clause = "AND substr(history.match_date, 1, 4) = ?" if year else ""
+        params = [tour, athlete_id, name or ""]
+        if year:
+            params.append(str(year))
         rows = connection.execute(
-            """
+            f"""
             SELECT history.payload_json, tournament.surface, tournament.categories_json
             FROM match_history AS history
             JOIN match_competitors AS player ON player.match_id = history.match_id
             LEFT JOIN tournament_history AS tournament ON tournament.tournament_id = history.tournament_id
             WHERE history.tour = ? AND history.state = 'post'
               AND (player.competitor_id = ? OR lower(player.name) = lower(?))
+              {year_clause}
             ORDER BY history.match_date DESC
             """,
-            (tour, athlete_id, name or ""),
+            params,
         ).fetchall()
     except sqlite3.OperationalError as exc:
         raise HTTPException(status_code=503, detail="Estatísticas ainda não foram geradas.") from exc
@@ -284,10 +289,55 @@ def player_career_stats(tour: str, athlete_id: str, name: Optional[str] = None) 
     for bucket in surfaces.values():
         bucket["winRate"] = round(bucket["wins"] / bucket["played"] * 100) if bucket["played"] else 0
     return {
-        "tour": tour, "athleteId": athlete_id, "matches": sum(item["played"] for item in surfaces.values()),
+        "tour": tour, "athleteId": athlete_id, "year": year, "matches": sum(item["played"] for item in surfaces.values()),
         "wins": sum(item["wins"] for item in surfaces.values()), "losses": sum(item["losses"] for item in surfaces.values()),
         "bySurface": surfaces, "titles": titles, "titleCount": sum(titles.values()), "titleList": title_list,
     }
+
+
+@app.get("/api/leaders", tags=["Jogadores"])
+def performance_leaders(
+    tour: str = Query(pattern="^(ATP|WTA)$"),
+    year: int = 2026,
+    metric: str = Query(default="titles", pattern="^(titles|wins|winRate)$"),
+    limit: int = Query(default=10, ge=1, le=50),
+) -> dict:
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        rows = connection.execute(
+            """
+            SELECT history.payload_json, tournament.categories_json
+            FROM match_history AS history
+            LEFT JOIN tournament_history AS tournament ON tournament.tournament_id = history.tournament_id
+            WHERE history.tour = ? AND history.state = 'post' AND substr(history.match_date, 1, 4) = ?
+            """,
+            (tour, str(year)),
+        ).fetchall()
+    finally:
+        connection.close()
+    players = {}
+    for row in rows:
+        match = json.loads(row["payload_json"])
+        if "singles" not in (match.get("discipline") or "").lower():
+            continue
+        is_final = (match.get("round") or "").lower() == "final"
+        category = (json.loads(row["categories_json"] or "{}")).get(tour)
+        for competitor in match.get("competitors") or []:
+            player_id = competitor.get("id") or competitor.get("name")
+            entry = players.setdefault(player_id, {"athleteId": player_id, "player": competitor.get("name"), "played": 0, "wins": 0, "titles": 0, "winRate": 0})
+            entry["played"] += 1
+            if competitor.get("winner"):
+                entry["wins"] += 1
+                if is_final and category:
+                    entry["titles"] += 1
+    for entry in players.values():
+        entry["winRate"] = round(entry["wins"] / entry["played"] * 100) if entry["played"] else 0
+    candidates = list(players.values())
+    if metric == "winRate":
+        candidates = [entry for entry in candidates if entry["played"] >= 5]
+    candidates.sort(key=lambda entry: (entry[metric], entry["wins"], -entry["played"]), reverse=True)
+    return {"tour": tour, "year": year, "metric": metric, "count": min(len(candidates), limit), "leaders": candidates[:limit]}
 
 
 @app.get("/api/head-to-head", tags=["Jogadores"])
