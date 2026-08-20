@@ -401,11 +401,23 @@ function App() {
     (match) => comparePlayers.every((player) => competitorForPlayer(match, player))
   );
   const toggleFavorite = (matchId) => {
+    if (!currentUser) {
+      setAuthMode("login");
+      setAuthError("Entre para salvar partidas e receber alertas.");
+      setAuthOpen(true);
+      return;
+    }
     setFavoriteMatchIds((current) =>
       current.includes(matchId) ? current.filter((id) => id !== matchId) : [...current, matchId]
     );
   };
   const toggleFavoritePlayer = (playerId) => {
+    if (!currentUser) {
+      setAuthMode("login");
+      setAuthError("Entre para seguir jogadores e personalizar sua página.");
+      setAuthOpen(true);
+      return;
+    }
     setFavoritePlayerIds((current) =>
       current.includes(playerId) ? current.filter((id) => id !== playerId) : [...current, playerId]
     );
@@ -493,7 +505,7 @@ function App() {
           <span>{tourData?.week || "Temporada 2026"}</span>
           <span>Atualizado em {formatUpdated(tourData?.lastUpdated || payload?.generatedAt)}</span>
           <div className="header-actions">
-            <button className="notification-button" type="button" aria-label="Abrir notificações" onClick={toggleNotifications}>🔔{unreadAlerts > 0 && <b>{unreadAlerts}</b>}</button>
+            {currentUser && <button className="notification-button" type="button" aria-label="Abrir notificações" onClick={toggleNotifications}>🔔{unreadAlerts > 0 && <b>{unreadAlerts}</b>}</button>}
             {currentUser ? <button className="account-button signed-in" type="button" onClick={logoutUser} title="Sair da conta"><span>{currentUser.name.slice(0, 1).toUpperCase()}</span><b>{currentUser.name}</b><small>Sair</small></button> : <button className="account-button" type="button" onClick={() => { setAuthMode("login"); setAuthError(""); setAuthOpen(true); }}>Entrar</button>}
           </div>
         </div>
@@ -602,12 +614,26 @@ function App() {
           <div className="today-summary">
             <div><span>Ao vivo</span><strong>{todayLive.length}</strong></div>
             <div><span>Próximas</span><strong>{todayUpcoming.length}</strong></div>
-            <div><span>Favoritos</span><strong>{favoriteTodayMatches.length}</strong></div>
+            {currentUser ? <div><span>Meus favoritos</span><strong>{favoriteTodayMatches.length}</strong></div> : <div><span>Líder do ranking</span><strong>{tourData?.players?.[0] ? `#${tourData.players[0].rank}` : "—"}</strong></div>}
             <div><span>Torneios ativos</span><strong>{(events?.tournaments || []).filter((item) => item.tours.includes(tour)).length}</strong></div>
           </div>
 
-          {favoriteTodayMatches.length > 0 && (
+          {currentUser && favoriteTodayMatches.length > 0 && (
             <div className="today-block favorite-block"><div className="profile-section-title"><h2>Para você</h2><span>Próximo jogo · até 7 dias</span></div><div className="home-match-list">{favoriteTodayMatches.map((match) => <button className="home-match" key={match.id} onClick={() => setSelectedMatchId(match.id)}><span><small>{match.tournament} · {match.round}</small><strong>{match.competitors.map((item) => item.name).join(" × ")}</strong></span><b>{match.state === "in" ? "AO VIVO" : formatMatchDate(match.date)}</b></button>)}</div></div>
+          )}
+
+          {!currentUser && (
+            <div className="public-home-grid">
+              <div className="today-block public-ranking">
+                <div className="profile-section-title"><h2>Ranking {tour}</h2><button onClick={() => setView("ranking")}>Ver ranking</button></div>
+                {(tourData?.players || []).slice(0, 5).map((player) => <button className="public-ranking-row" key={player.athleteId} onClick={() => openPlayerProfile({ id: player.athleteId, name: player.player })}><strong>#{player.rank}</strong><span>{player.player}<small>{player.country || player.countryCode}</small></span><b>{formatPoints(player.points)} pts</b></button>)}
+              </div>
+              <div className="today-block public-tournaments">
+                <div className="profile-section-title"><h2>Torneios atuais</h2><button onClick={() => setView("matches")}>Ver partidas</button></div>
+                {(events?.tournaments || []).filter((item) => item.tours.includes(tour)).slice(0, 5).map((tournament) => <div className="public-tournament-row" key={tournament.id || tournament.name}><span>{tournament.name}</span><small>{tournament.location || tournament.venue || tournament.tours.join(" · ")}</small></div>)}
+                {(events?.tournaments || []).filter((item) => item.tours.includes(tour)).length === 0 && <p className="empty profile-empty">Nenhum torneio ativo agora.</p>}
+              </div>
+            </div>
           )}
 
           <div className="today-columns">
@@ -615,7 +641,7 @@ function App() {
             <div className="today-block"><div className="profile-section-title"><h2>Próximas</h2><button onClick={() => setView("matches")}>Ver todas</button></div><div className="home-match-list">{todayUpcoming.map((match) => <button className="home-match" key={match.id} onClick={() => setSelectedMatchId(match.id)}><span><small>{match.tournament} · {match.round}</small><strong>{match.competitors.map((item) => item.name).join(" × ")}</strong></span><b>{formatMatchDate(match.date)}</b></button>)}</div></div>
           </div>
 
-          <div className="today-block"><div className="profile-section-title"><h2>Resultados recentes</h2><span>{tour}</span></div><div className="home-match-list recent-grid">{todayRecent.map((match) => <button className="home-match" key={match.id} onClick={() => setSelectedMatchId(match.id)}><span><small>{match.tournament} · {match.round}</small><strong>{match.competitors.map((item) => item.name).join(" × ")}</strong></span><b>FINAL</b></button>)}</div></div>
+          {currentUser && <div className="today-block"><div className="profile-section-title"><h2>Resultados recentes</h2><span>{tour}</span></div><div className="home-match-list recent-grid">{todayRecent.map((match) => <button className="home-match" key={match.id} onClick={() => setSelectedMatchId(match.id)}><span><small>{match.tournament} · {match.round}</small><strong>{match.competitors.map((item) => item.name).join(" × ")}</strong></span><b>FINAL</b></button>)}</div></div>}
         </section>
       )}
 

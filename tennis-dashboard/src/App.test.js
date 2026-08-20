@@ -91,11 +91,14 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-test('renders the personalized today page', async () => {
+test('renders the general public today page', async () => {
   render(<App />);
   const heading = screen.getByText(/Tênis hoje/i);
   expect(heading).toBeInTheDocument();
   await screen.findAllByText(/Jannik Sinner × Carlos Alcaraz/);
+  expect(screen.getByText('Ranking ATP')).toBeInTheDocument();
+  expect(screen.getByText('Torneios atuais')).toBeInTheDocument();
+  expect(screen.queryByText('Para você')).not.toBeInTheDocument();
 });
 
 test('opens the account modal, signs in and persists the session', async () => {
@@ -126,6 +129,7 @@ test('switches from login to account registration', async () => {
 
 test('shows only one relevant match per favorite player on the today page', async () => {
   window.localStorage.setItem('favoritePlayerIds', JSON.stringify(['1']));
+  window.localStorage.setItem('tennisAuthToken', 'session-token');
   render(<App />);
 
   const label = await screen.findByText('Próximo jogo · até 7 dias');
@@ -137,8 +141,9 @@ test('shows only one relevant match per favorite player on the today page', asyn
 
 test('opens the notification center and clears persisted alerts', async () => {
   window.localStorage.setItem('tennisAlerts', JSON.stringify([{ id: 'alert-1', matchId: 'match-1', title: 'Sua partida começou', body: 'Jannik Sinner × Carlos Alcaraz', createdAt: '2026-08-20T15:00:00Z', read: false }]));
+  window.localStorage.setItem('tennisAuthToken', 'session-token');
   render(<App />);
-  await screen.findAllByText(/Jannik Sinner × Carlos Alcaraz/);
+  await screen.findByRole('button', { name: /Bia.*Sair/i });
 
   fireEvent.click(screen.getByRole('button', { name: 'Abrir notificações' }));
   expect(screen.getByLabelText('Central de notificações')).toBeInTheDocument();
@@ -175,7 +180,9 @@ test('shows live tournament scores in the matches view', async () => {
 });
 
 test('opens match details and saves a favorite', async () => {
+  window.localStorage.setItem('tennisAuthToken', 'session-token');
   render(<App />);
+  await screen.findByRole('button', { name: /Bia.*Sair/i });
   fireEvent.click(await screen.findByRole('button', { name: /Torneios e partidas/i }));
 
   fireEvent.click(await screen.findByText('Cincinnati Open'));
@@ -187,7 +194,9 @@ test('opens match details and saves a favorite', async () => {
 });
 
 test('opens a player profile with ranking, matches and favorite state', async () => {
+  window.localStorage.setItem('tennisAuthToken', 'session-token');
   render(<App />);
+  await screen.findByRole('button', { name: /Bia.*Sair/i });
   fireEvent.click(screen.getByRole('button', { name: 'Ranking' }));
   const playerNames = await screen.findAllByText('Jannik Sinner');
 

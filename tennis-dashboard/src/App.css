@@ -328,6 +328,34 @@
   margin-bottom: 14px;
 }
 
+.public-home-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.public-ranking-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.public-ranking-row > strong { color: var(--accent); }
+.public-ranking-row > span { display: flex; min-width: 0; flex-direction: column; font-weight: 800; }
+.public-ranking-row small, .public-tournament-row small { color: var(--muted); font-size: 11px; font-weight: 400; }
+.public-ranking-row > b { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.public-tournament-row { display: flex; flex-direction: column; gap: 3px; padding: 13px 0; border-bottom: 1px solid var(--line); font-weight: 800; }
+
 .today-block {
   margin-bottom: 14px;
   padding: 18px;
@@ -1722,6 +1750,7 @@ th {
   }
 
   .today-columns,
+  .public-home-grid,
   .recent-grid {
     grid-template-columns: 1fr;
   }
