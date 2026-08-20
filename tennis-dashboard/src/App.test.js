@@ -77,6 +77,7 @@ beforeEach(() => {
     if (String(url).includes('/api/auth/me')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ user: { id: 'user-1', name: 'Bia', email: 'bia@example.com' } }) });
     if (String(url).includes('/api/account/preferences') && options.method === 'POST') return Promise.resolve({ ok: true, json: () => Promise.resolve({ saved: true }) });
     if (String(url).includes('/api/account/preferences')) return Promise.resolve({ ok: true, json: () => Promise.resolve(accountPreferences) });
+    if (String(url).includes('/api/account/profile')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ saved: true, passwordChanged: true, user: { id: 'user-1', name: 'Beatriz', email: 'bia@example.com' } }) });
     if (String(url).includes('/api/head-to-head')) return new Promise(() => {});
     if (String(url).includes('/api/leaders?')) return Promise.resolve({ ok: true, json: () => Promise.resolve(leaders) });
     if (String(url).includes('/api/tournaments/archive-1/matches')) return Promise.resolve({ ok: true, json: () => Promise.resolve(events) });
@@ -116,9 +117,25 @@ test('opens the account modal, signs in and persists the session', async () => {
   fireEvent.change(within(dialog).getByLabelText('Senha'), { target: { value: 'senha-segura' } });
   fireEvent.click(within(dialog).getByRole('button', { name: 'Entrar' }));
 
-  expect(await screen.findByRole('button', { name: /Bia.*Sair/i })).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: /Bia.*Minha conta/i })).toBeInTheDocument();
   expect(window.localStorage.getItem('tennisAuthToken')).toBe('session-token');
   expect(global.fetch).toHaveBeenCalledWith('/api/auth/login', expect.objectContaining({ method: 'POST' }));
+});
+
+test('updates profile and password from the account panel', async () => {
+  window.localStorage.setItem('tennisAuthToken', 'session-token');
+  render(<App />);
+  fireEvent.click(await screen.findByRole('button', { name: /Bia.*Minha conta/i }));
+
+  const account = screen.getByRole('dialog', { name: 'Minha conta' });
+  fireEvent.change(within(account).getByLabelText('Nome'), { target: { value: 'Beatriz' } });
+  fireEvent.change(within(account).getByLabelText('Senha atual'), { target: { value: 'senha-antiga' } });
+  fireEvent.change(within(account).getByLabelText('Nova senha'), { target: { value: 'senha-nova-segura' } });
+  fireEvent.click(within(account).getByRole('button', { name: 'Salvar alterações' }));
+
+  expect(await screen.findByText('Nome e senha atualizados com segurança.')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /Beatriz.*Minha conta/i })).toBeInTheDocument();
+  expect(global.fetch).toHaveBeenCalledWith('/api/account/profile', expect.objectContaining({ method: 'POST' }));
 });
 
 test('switches from login to account registration', async () => {
@@ -158,7 +175,7 @@ test('opens the notification center and clears persisted alerts', async () => {
   window.localStorage.setItem('tennisAlerts', JSON.stringify([{ id: 'alert-1', matchId: 'match-1', title: 'Sua partida começou', body: 'Jannik Sinner × Carlos Alcaraz', createdAt: '2026-08-20T15:00:00Z', read: false }]));
   window.localStorage.setItem('tennisAuthToken', 'session-token');
   render(<App />);
-  await screen.findByRole('button', { name: /Bia.*Sair/i });
+  await screen.findByRole('button', { name: /Bia.*Minha conta/i });
 
   fireEvent.click(screen.getByRole('button', { name: 'Abrir notificações' }));
   expect(screen.getByLabelText('Central de notificações')).toBeInTheDocument();
@@ -197,7 +214,7 @@ test('shows live tournament scores in the matches view', async () => {
 test('opens match details and saves a favorite', async () => {
   window.localStorage.setItem('tennisAuthToken', 'session-token');
   render(<App />);
-  await screen.findByRole('button', { name: /Bia.*Sair/i });
+  await screen.findByRole('button', { name: /Bia.*Minha conta/i });
   fireEvent.click(await screen.findByRole('button', { name: /Torneios e partidas/i }));
 
   fireEvent.click(await screen.findByText('Cincinnati Open'));
@@ -211,7 +228,7 @@ test('opens match details and saves a favorite', async () => {
 test('opens a player profile with ranking, matches and favorite state', async () => {
   window.localStorage.setItem('tennisAuthToken', 'session-token');
   render(<App />);
-  await screen.findByRole('button', { name: /Bia.*Sair/i });
+  await screen.findByRole('button', { name: /Bia.*Minha conta/i });
   fireEvent.click(screen.getByRole('button', { name: 'Ranking' }));
   const playerNames = await screen.findAllByText('Jannik Sinner');
 

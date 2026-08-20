@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T18:16:11.101019+00:00",
+  "generatedAt": "2026-08-20T18:22:51.645126+00:00",
   "source": "ESPN Tennis Scoreboard",
   "refreshSeconds": 60,
   "tournaments": [
@@ -14,76 +14,10 @@
         "WTA"
       ],
       "matchCount": 324,
-      "liveCount": 2
+      "liveCount": 1
     }
   ],
   "matches": [
-    {
-      "id": "182010",
-      "tournamentId": "718-2026",
-      "tournament": "Cincinnati Open",
-      "tour": "ATP",
-      "discipline": "Men's Doubles",
-      "round": "Round 2",
-      "date": "2026-08-20T16:45Z",
-      "state": "in",
-      "status": "In Progress",
-      "detail": "3rd Set",
-      "venue": "Cincinnati, USA",
-      "court": "Grandstand",
-      "competitors": [
-        {
-          "id": "11568-650",
-          "name": "Constantin Frantzén / Robin Haase",
-          "shortName": "C. Frantzén / R. Haase",
-          "country": "Germany",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ger.png",
-          "winner": false,
-          "sets": [
-            {
-              "value": 7,
-              "tiebreak": 7,
-              "winner": true
-            },
-            {
-              "value": 3,
-              "tiebreak": null,
-              "winner": false
-            },
-            {
-              "value": 0,
-              "tiebreak": 3,
-              "winner": false
-            }
-          ]
-        },
-        {
-          "id": "841-3335",
-          "name": "Rajeev Ram / Joe Salisbury",
-          "shortName": "R. Ram / J. Salisbury",
-          "country": "USA",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
-          "winner": false,
-          "sets": [
-            {
-              "value": 6,
-              "tiebreak": 5,
-              "winner": false
-            },
-            {
-              "value": 6,
-              "tiebreak": null,
-              "winner": true
-            },
-            {
-              "value": 0,
-              "tiebreak": 1,
-              "winner": false
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "182375",
       "tournamentId": "718-2026",
@@ -112,7 +46,7 @@
               "winner": true
             },
             {
-              "value": 1,
+              "value": 2,
               "tiebreak": null,
               "winner": false
             }
@@ -132,7 +66,7 @@
               "winner": false
             },
             {
-              "value": 4,
+              "value": 5,
               "tiebreak": null,
               "winner": false
             }
@@ -345,40 +279,6 @@
       ]
     },
     {
-      "id": "182368",
-      "tournamentId": "718-2026",
-      "tournament": "Cincinnati Open",
-      "tour": "WTA",
-      "discipline": "Women's Singles",
-      "round": "Quarterfinal",
-      "date": "2026-08-21T00:30Z",
-      "state": "pre",
-      "status": "Scheduled",
-      "detail": "Thu, August 20th at 8:30 PM EDT",
-      "venue": "Cincinnati, USA",
-      "court": "",
-      "competitors": [
-        {
-          "id": "3382",
-          "name": "Marta Kostyuk",
-          "shortName": "M. Kostyuk",
-          "country": "Ukraine",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ukr.png",
-          "winner": false,
-          "sets": []
-        },
-        {
-          "id": "3626",
-          "name": "Coco Gauff",
-          "shortName": "C. Gauff",
-          "country": "USA",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
-          "winner": false,
-          "sets": []
-        }
-      ]
-    },
-    {
       "id": "182467",
       "tournamentId": "718-2026",
       "tournament": "Cincinnati Open",
@@ -390,7 +290,7 @@
       "status": "Scheduled",
       "detail": "Fri, August 21st at 11:00 AM EDT",
       "venue": "Cincinnati, USA",
-      "court": "",
+      "court": "P&G Stadium Court",
       "competitors": [
         {
           "id": "4477-1455",
@@ -424,7 +324,7 @@
       "status": "Scheduled",
       "detail": "Fri, August 21st at 11:00 AM EDT",
       "venue": "Cincinnati, USA",
-      "court": "",
+      "court": "Grandstand",
       "competitors": [
         {
           "id": "698-1513",
@@ -458,7 +358,7 @@
       "status": "Scheduled",
       "detail": "Fri, August 21st at 11:00 AM EDT",
       "venue": "Cincinnati, USA",
-      "court": "",
+      "court": "Tony Trabert Stadium 3",
       "competitors": [
         {
           "id": "10882-1965",
@@ -470,11 +370,11 @@
           "sets": []
         },
         {
-          "id": "-3--4",
-          "name": "TBD / TBD",
-          "shortName": "TBD / TBD",
-          "country": "",
-          "flag": "",
+          "id": "11568-650",
+          "name": "Constantin Frantzén / Robin Haase",
+          "shortName": "C. Frantzén / R. Haase",
+          "country": "Germany",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ger.png",
           "winner": false,
           "sets": []
         }
@@ -492,7 +392,7 @@
       "status": "Scheduled",
       "detail": "Fri, August 21st at 12:30 PM EDT",
       "venue": "Cincinnati, USA",
-      "court": "",
+      "court": "Tony Trabert Stadium 3",
       "competitors": [
         {
           "id": "3601-3687",
@@ -526,7 +426,7 @@
       "status": "Scheduled",
       "detail": "Fri, August 21st at 12:30 PM EDT",
       "venue": "Cincinnati, USA",
-      "court": "",
+      "court": "Grandstand",
       "competitors": [
         {
           "id": "2725-2434",
@@ -560,7 +460,7 @@
       "status": "Scheduled",
       "detail": "Fri, August 21st at 1:00 PM EDT",
       "venue": "Cincinnati, USA",
-      "court": "",
+      "court": "P&G Stadium Court",
       "competitors": [
         {
           "id": "1556",
@@ -583,6 +483,40 @@
       ]
     },
     {
+      "id": "182460",
+      "tournamentId": "718-2026",
+      "tournament": "Cincinnati Open",
+      "tour": "WTA",
+      "discipline": "Women's Doubles",
+      "round": "Semifinal",
+      "date": "2026-08-21T18:00Z",
+      "state": "pre",
+      "status": "Scheduled",
+      "detail": "Fri, August 21st at 2:00 PM EDT",
+      "venue": "Cincinnati, USA",
+      "court": "Grandstand",
+      "competitors": [
+        {
+          "id": "-4",
+          "name": "TBD",
+          "shortName": "TBD",
+          "country": "",
+          "flag": "",
+          "winner": false,
+          "sets": []
+        },
+        {
+          "id": "-3",
+          "name": "TBD",
+          "shortName": "TBD",
+          "country": "",
+          "flag": "",
+          "winner": false,
+          "sets": []
+        }
+      ]
+    },
+    {
       "id": "181916",
       "tournamentId": "718-2026",
       "tournament": "Cincinnati Open",
@@ -594,7 +528,7 @@
       "status": "Scheduled",
       "detail": "Fri, August 21st at 3:00 PM EDT",
       "venue": "Cincinnati, USA",
-      "court": "",
+      "court": "P&G Stadium Court",
       "competitors": [
         {
           "id": "3774",
@@ -628,7 +562,7 @@
       "status": "Scheduled",
       "detail": "Fri, August 21st at 7:00 PM EDT",
       "venue": "Cincinnati, USA",
-      "court": "",
+      "court": "P&G Stadium Court",
       "competitors": [
         {
           "id": "2708",
@@ -645,6 +579,40 @@
           "shortName": "L. Musetti",
           "country": "Italy",
           "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
+          "winner": false,
+          "sets": []
+        }
+      ]
+    },
+    {
+      "id": "182368",
+      "tournamentId": "718-2026",
+      "tournament": "Cincinnati Open",
+      "tour": "WTA",
+      "discipline": "Women's Singles",
+      "round": "Quarterfinal",
+      "date": "2026-08-22T00:30Z",
+      "state": "pre",
+      "status": "Scheduled",
+      "detail": "Fri, August 21st at 8:30 PM EDT",
+      "venue": "Cincinnati, USA",
+      "court": "P&G Stadium Court",
+      "competitors": [
+        {
+          "id": "3382",
+          "name": "Marta Kostyuk",
+          "shortName": "M. Kostyuk",
+          "country": "Ukraine",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ukr.png",
+          "winner": false,
+          "sets": []
+        },
+        {
+          "id": "3626",
+          "name": "Coco Gauff",
+          "shortName": "C. Gauff",
+          "country": "USA",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
           "winner": false,
           "sets": []
         }
@@ -758,40 +726,6 @@
       "tournament": "Cincinnati Open",
       "tour": "WTA",
       "discipline": "Women's Singles",
-      "round": "Semifinal",
-      "date": "2026-08-22T04:00Z",
-      "state": "pre",
-      "status": "Scheduled",
-      "detail": "M/d - 'TBD'",
-      "venue": "Cincinnati, USA",
-      "court": "",
-      "competitors": [
-        {
-          "id": "-4",
-          "name": "TBD",
-          "shortName": "TBD",
-          "country": "",
-          "flag": "",
-          "winner": false,
-          "sets": []
-        },
-        {
-          "id": "-3",
-          "name": "TBD",
-          "shortName": "TBD",
-          "country": "",
-          "flag": "",
-          "winner": false,
-          "sets": []
-        }
-      ]
-    },
-    {
-      "id": "182460",
-      "tournamentId": "718-2026",
-      "tournament": "Cincinnati Open",
-      "tour": "WTA",
-      "discipline": "Women's Doubles",
       "round": "Semifinal",
       "date": "2026-08-22T04:00Z",
       "state": "pre",
@@ -18623,6 +18557,72 @@
               "value": 1,
               "tiebreak": 10,
               "winner": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "182010",
+      "tournamentId": "718-2026",
+      "tournament": "Cincinnati Open",
+      "tour": "ATP",
+      "discipline": "Men's Doubles",
+      "round": "Round 2",
+      "date": "2026-08-20T16:45Z",
+      "state": "post",
+      "status": "Final",
+      "detail": "Final",
+      "venue": "Cincinnati, USA",
+      "court": "Grandstand",
+      "competitors": [
+        {
+          "id": "11568-650",
+          "name": "Constantin Frantzén / Robin Haase",
+          "shortName": "C. Frantzén / R. Haase",
+          "country": "Germany",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ger.png",
+          "winner": true,
+          "sets": [
+            {
+              "value": 7,
+              "tiebreak": 7,
+              "winner": true
+            },
+            {
+              "value": 3,
+              "tiebreak": null,
+              "winner": false
+            },
+            {
+              "value": 1,
+              "tiebreak": 10,
+              "winner": true
+            }
+          ]
+        },
+        {
+          "id": "841-3335",
+          "name": "Rajeev Ram / Joe Salisbury",
+          "shortName": "R. Ram / J. Salisbury",
+          "country": "USA",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
+          "winner": false,
+          "sets": [
+            {
+              "value": 6,
+              "tiebreak": 5,
+              "winner": false
+            },
+            {
+              "value": 6,
+              "tiebreak": null,
+              "winner": true
+            },
+            {
+              "value": 0,
+              "tiebreak": 4,
+              "winner": false
             }
           ]
         }

@@ -149,6 +149,9 @@ function App() {
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [preferencesReady, setPreferencesReady] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [accountLoading, setAccountLoading] = useState(false);
+  const [accountMessage, setAccountMessage] = useState("");
   const previousMatchStates = useRef(new Map());
   const [comparePlayerIds, setComparePlayerIds] = useState(["", ""]);
   const [favoriteMatchIds, setFavoriteMatchIds] = useState(() => {
@@ -517,6 +520,35 @@ function App() {
     setFavoritePlayerIds([]);
     setFavoriteMatchIds([]);
     setTour("ATP");
+    setAccountOpen(false);
+  };
+  const submitAccount = async (event) => {
+    event.preventDefault();
+    setAccountLoading(true);
+    setAccountMessage("");
+    const form = event.currentTarget;
+    const fields = new FormData(form);
+    const currentPassword = fields.get("currentPassword");
+    const newPassword = fields.get("newPassword");
+    const body = { name: fields.get("name") };
+    if (currentPassword || newPassword) Object.assign(body, { currentPassword, newPassword });
+    try {
+      const response = await fetch("/api/account/profile", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Não foi possível atualizar a conta.");
+      setCurrentUser(data.user);
+      setAccountMessage(data.passwordChanged ? "Nome e senha atualizados com segurança." : "Nome atualizado.");
+      form.elements.currentPassword.value = "";
+      form.elements.newPassword.value = "";
+    } catch (accountError) {
+      setAccountMessage(accountError.message);
+    } finally {
+      setAccountLoading(false);
+    }
   };
   const liveCount = (events?.matches || []).filter(
     (match) => match.tour === tour && match.state === "in"
@@ -552,7 +584,7 @@ function App() {
           <span>Atualizado em {formatUpdated(tourData?.lastUpdated || payload?.generatedAt)}</span>
           <div className="header-actions">
             {currentUser && <button className="notification-button" type="button" aria-label="Abrir notificações" onClick={toggleNotifications}>🔔{unreadAlerts > 0 && <b>{unreadAlerts}</b>}</button>}
-            {currentUser ? <button className="account-button signed-in" type="button" onClick={logoutUser} title="Sair da conta"><span>{currentUser.name.slice(0, 1).toUpperCase()}</span><b>{currentUser.name}</b><small>Sair</small></button> : <button className="account-button" type="button" onClick={() => { setAuthMode("login"); setAuthError(""); setAuthOpen(true); }}>Entrar</button>}
+            {currentUser ? <button className="account-button signed-in" type="button" onClick={() => { setAccountMessage(""); setAccountOpen(true); }}><span>{currentUser.name.slice(0, 1).toUpperCase()}</span><b>{currentUser.name}</b><small>Minha conta</small></button> : <button className="account-button" type="button" onClick={() => { setAuthMode("login"); setAuthError(""); setAuthOpen(true); }}>Entrar</button>}
           </div>
         </div>
       </header>
@@ -573,6 +605,29 @@ function App() {
               <button className="auth-submit" disabled={authLoading}>{authLoading ? "Aguarde..." : authMode === "login" ? "Entrar" : "Criar conta"}</button>
             </form>
             <button className="auth-switch" type="button" onClick={() => { setAuthMode((mode) => mode === "login" ? "register" : "login"); setAuthError(""); }}>{authMode === "login" ? "Ainda não tenho conta" : "Já tenho uma conta"}</button>
+          </section>
+        </div>
+      )}
+
+      {accountOpen && currentUser && (
+        <div className="modal-backdrop auth-backdrop" role="presentation" onMouseDown={() => setAccountOpen(false)}>
+          <section className="auth-modal account-modal" role="dialog" aria-modal="true" aria-labelledby="account-title" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="modal-header"><div><p className="eyebrow">Perfil e segurança</p><h2 id="account-title">Minha conta</h2></div><button className="close-button" type="button" onClick={() => setAccountOpen(false)} aria-label="Fechar minha conta">×</button></div>
+            <p className="account-email">{currentUser.email}</p>
+            <div className="account-summary">
+              <div><strong>{favoritePlayerIds.length}</strong><span>Jogadores favoritos</span></div>
+              <div><strong>{favoriteMatchIds.length}</strong><span>Partidas favoritas</span></div>
+              <div><strong>{tour}</strong><span>Circuito preferido</span></div>
+            </div>
+            <form className="auth-form account-form" onSubmit={submitAccount}>
+              <label><span>Nome</span><input name="name" required minLength="2" defaultValue={currentUser.name} autoComplete="name" /></label>
+              <div className="password-section"><strong>Trocar senha</strong><small>Deixe os dois campos vazios para manter a senha atual.</small></div>
+              <label><span>Senha atual</span><input name="currentPassword" type="password" minLength="8" autoComplete="current-password" /></label>
+              <label><span>Nova senha</span><input name="newPassword" type="password" minLength="8" autoComplete="new-password" /></label>
+              {accountMessage && <p className="account-message" role="status">{accountMessage}</p>}
+              <button className="auth-submit" disabled={accountLoading}>{accountLoading ? "Salvando..." : "Salvar alterações"}</button>
+            </form>
+            <button className="account-logout" type="button" onClick={logoutUser}>Sair da conta</button>
           </section>
         </div>
       )}

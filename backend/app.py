@@ -59,6 +59,12 @@ class PreferencePayload(BaseModel):
     preferredTour: str = Field(default="ATP", pattern="^(ATP|WTA)$")
 
 
+class AccountUpdatePayload(BaseModel):
+    name: str = Field(min_length=2, max_length=60)
+    currentPassword: Optional[str] = Field(default=None, min_length=8, max_length=128)
+    newPassword: Optional[str] = Field(default=None, min_length=8, max_length=128)
+
+
 def _initialize_auth_tables() -> None:
     HISTORY_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(HISTORY_DB_PATH)
@@ -274,6 +280,34 @@ def save_account_preferences(payload: PreferencePayload, authorization: Optional
     finally:
         connection.close()
     return {"saved": True, "favoritePlayerIds": player_ids, "favoriteMatchIds": match_ids, "preferredTour": payload.preferredTour, "updatedAt": now}
+
+
+@app.post("/api/account/profile", tags=["Conta"])
+def update_account_profile(payload: AccountUpdatePayload, authorization: Optional[str] = Header(default=None)) -> dict:
+    user = _authenticated_user(authorization)
+    if bool(payload.currentPassword) != bool(payload.newPassword):
+        raise HTTPException(status_code=400, detail="Informe a senha atual e a nova senha.")
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        if payload.newPassword:
+            stored = connection.execute("SELECT password_hash FROM users WHERE user_id = ?", (user["user_id"],)).fetchone()
+            if not stored or not _password_matches(payload.currentPassword or "", stored["password_hash"]):
+                raise HTTPException(status_code=400, detail="A senha atual está incorreta.")
+            connection.execute(
+                "UPDATE users SET name = ?, password_hash = ? WHERE user_id = ?",
+                (payload.name.strip(), _password_hash(payload.newPassword), user["user_id"]),
+            )
+            connection.execute(
+                "DELETE FROM user_sessions WHERE user_id = ? AND token_hash <> ?",
+                (user["user_id"], _token_hash(authorization.removeprefix("Bearer ").strip())),
+            )
+        else:
+            connection.execute("UPDATE users SET name = ? WHERE user_id = ?", (payload.name.strip(), user["user_id"]))
+        connection.commit()
+    finally:
+        connection.close()
+    return {"saved": True, "passwordChanged": bool(payload.newPassword), "user": {"id": user["user_id"], "name": payload.name.strip(), "email": user["email"]}}
 
 
 @app.get("/api/rankings", tags=["Rankings"])
