@@ -124,6 +124,7 @@ function App() {
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [archivedMatches, setArchivedMatches] = useState([]);
   const [remotePlayerMatches, setRemotePlayerMatches] = useState(null);
+  const [remotePlayerStats, setRemotePlayerStats] = useState(null);
   const [comparePlayerIds, setComparePlayerIds] = useState(["", ""]);
   const [favoriteMatchIds, setFavoriteMatchIds] = useState(() => {
     try {
@@ -241,6 +242,7 @@ function App() {
   useEffect(() => {
     if (!selectedPlayer) {
       setRemotePlayerMatches(null);
+      setRemotePlayerStats(null);
       return;
     }
     const params = new URLSearchParams({ name: selectedPlayer.player, limit: "100" });
@@ -248,6 +250,10 @@ function App() {
       .then((response) => response.ok ? response.json() : null)
       .then(setRemotePlayerMatches)
       .catch(() => setRemotePlayerMatches(null));
+    fetch(`/api/players/${tour}/${encodeURIComponent(selectedPlayer.athleteId)}/stats?${params}`)
+      .then((response) => response.ok ? response.json() : null)
+      .then(setRemotePlayerStats)
+      .catch(() => setRemotePlayerStats(null));
   }, [selectedPlayer, tour]);
   const openPlayerProfile = (competitor) => {
     const competitorName = normalizeSearchValue(competitor.name);
@@ -570,11 +576,11 @@ function App() {
           <div className="archive-grid">
             {(tournamentArchive?.tournaments || []).map((tournament) => (
               <button className="tournament-card" key={tournament.id} onClick={() => openArchivedTournament(tournament)}>
-                <span className="tournament-year">{tournament.major ? "Grand Slam" : tournament.tours?.join(" · ")}</span>
+                <div className="tournament-badges"><span>{tournament.category || (tournament.major ? "Grand Slam" : tournament.tours?.join(" · "))}</span>{tournament.surface && <span>{tournament.surface}</span>}</div>
                 <h3>{tournament.name}</h3>
                 <p>{formatMatchDate(tournament.startDate)} — {tournament.endDate ? new Date(tournament.endDate).toLocaleDateString("pt-BR") : "—"}</p>
                 {tournament.champion && <p className="tournament-winner"><strong>Campeão:</strong> {tournament.champion}<br /><span>Vice: {tournament.runnerUp || "—"}</span></p>}
-                <div><span>{tournament.matchCount || 0} partidas</span><strong>Ver torneio →</strong></div>
+                <div className="tournament-footer"><span>{tournament.matchCount || 0} partidas</span><strong>Ver torneio →</strong></div>
               </button>
             ))}
           </div>
@@ -663,6 +669,21 @@ function App() {
               <div><span>Derrotas</span><strong>{Math.max(playerFinishedMatches.length - playerHistoricalWins, 0)}</strong></div>
               <div><span>Aproveitamento</span><strong>{playerFinishedMatches.length ? `${Math.round((playerHistoricalWins / playerFinishedMatches.length) * 100)}%` : "—"}</strong></div>
             </div>
+
+            {remotePlayerStats && (
+              <div className="career-stats">
+                <div className="profile-section-title"><h3>Títulos no histórico</h3><span>{remotePlayerStats.titleCount} títulos</span></div>
+                <div className="title-breakdown">
+                  {["Grand Slam", "1000", "500", "250", "Finals"].map((category) => <div key={category}><strong>{remotePlayerStats.titles?.[category] || 0}</strong><span>{category}</span></div>)}
+                </div>
+                <div className="profile-section-title surface-title"><h3>Desempenho por superfície</h3><span>{remotePlayerStats.matches} partidas</span></div>
+                <div className="surface-stats">
+                  {Object.entries(remotePlayerStats.bySurface || {}).map(([surface, stats]) => (
+                    <div key={surface}><span><strong>{surface}</strong><small>{stats.wins}V · {stats.losses}D</small></span><div><i style={{ width: `${stats.winRate}%` }} /></div><b>{stats.winRate}%</b></div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="profile-matches">
               <div className="profile-section-title">

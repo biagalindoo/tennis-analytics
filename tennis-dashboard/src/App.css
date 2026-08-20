@@ -706,6 +706,84 @@ th {
   font-size: 18px;
 }
 
+.career-stats {
+  margin-bottom: 24px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #102b17;
+}
+
+.title-breakdown {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+}
+
+.title-breakdown > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 5px;
+  border-radius: 10px;
+  background: #0c2413;
+}
+
+.title-breakdown strong {
+  color: #e4bd36;
+  font-size: 22px;
+}
+
+.title-breakdown span {
+  color: var(--muted);
+  font-size: 10px;
+  text-align: center;
+}
+
+.surface-title {
+  margin-top: 22px;
+}
+
+.surface-stats {
+  display: grid;
+  gap: 12px;
+}
+
+.surface-stats > div {
+  display: grid;
+  grid-template-columns: 110px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+}
+
+.surface-stats > div > span {
+  display: flex;
+  flex-direction: column;
+}
+
+.surface-stats small {
+  color: var(--muted);
+}
+
+.surface-stats > div > div {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #24402a;
+}
+
+.surface-stats i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.surface-stats b {
+  text-align: right;
+}
+
 .profile-stats strong.up {
   color: #8fbf73;
 }
@@ -987,12 +1065,28 @@ th {
   transform: translateY(-2px);
 }
 
-.tournament-year {
+.tournament-year,
+.tournament-badges span {
   color: var(--accent);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.tournament-badges {
+  display: flex;
+  gap: 6px;
+}
+
+.tournament-badges span {
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.tournament-badges span + span {
+  color: var(--muted);
 }
 
 .tournament-card h3 {
@@ -1025,7 +1119,7 @@ th {
   color: var(--muted);
 }
 
-.tournament-card > div {
+.tournament-footer {
   display: flex;
   width: 100%;
   justify-content: space-between;
@@ -1036,7 +1130,7 @@ th {
   font-size: 12px;
 }
 
-.tournament-card > div strong {
+.tournament-footer strong {
   color: var(--text);
 }
 
@@ -1101,6 +1195,14 @@ th {
 
   .profile-record {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .title-breakdown {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .surface-stats > div {
+    grid-template-columns: 90px 1fr 38px;
   }
 
   .compare-player-card {

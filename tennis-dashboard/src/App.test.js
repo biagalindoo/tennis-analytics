@@ -43,12 +43,18 @@ const rankingHistory = {
 
 const tournamentArchive = {
   count: 1,
-  tournaments: [{ id: 'archive-1', name: 'Australian Open', startDate: '2026-01-12T00:00Z', endDate: '2026-01-25T00:00Z', year: 2026, major: true, tours: ['ATP', 'WTA'], matchCount: 254, champion: 'Jannik Sinner', runnerUp: 'Carlos Alcaraz' }],
+  tournaments: [{ id: 'archive-1', name: 'Australian Open', startDate: '2026-01-12T00:00Z', endDate: '2026-01-25T00:00Z', year: 2026, major: true, tours: ['ATP', 'WTA'], matchCount: 254, champion: 'Jannik Sinner', runnerUp: 'Carlos Alcaraz', category: 'Grand Slam', surface: 'Hard' }],
 };
 
 const archivedPlayerMatches = [...events.matches, {
   ...events.matches[1], id: 'match-old', tournament: 'US Open', round: 'Final 2024',
 }];
+
+const playerStats = {
+  matches: 3, wins: 2, losses: 1, titleCount: 2,
+  titles: { 'Grand Slam': 1, '1000': 1, '500': 0, '250': 0, Finals: 0 },
+  bySurface: { Hard: { played: 3, wins: 2, losses: 1, winRate: 67 } },
+};
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -57,6 +63,7 @@ beforeEach(() => {
     if (String(url).includes('/api/tournaments/archive-1/matches')) return Promise.resolve({ ok: true, json: () => Promise.resolve(events) });
     if (String(url).includes('/api/tournaments?')) return Promise.resolve({ ok: true, json: () => Promise.resolve(tournamentArchive) });
     if (String(url).includes('/api/players/ATP/1/matches')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ count: 3, matches: archivedPlayerMatches }) });
+    if (String(url).includes('/api/players/ATP/1/stats')) return Promise.resolve({ ok: true, json: () => Promise.resolve(playerStats) });
     return Promise.resolve({
       ok: true,
       json: () => Promise.resolve(
@@ -125,6 +132,8 @@ test('opens a player profile with ranking, matches and favorite state', async ()
   await waitFor(() => expect(screen.getAllByText('vs. Carlos Alcaraz')).toHaveLength(3));
   expect(screen.getByText(/Primeiro registro salvo/)).toBeInTheDocument();
   expect(screen.getByText('US Open', { exact: false })).toBeInTheDocument();
+  expect(await screen.findByText('2 títulos')).toBeInTheDocument();
+  expect(screen.getByText('67%')).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Alternar jogador favorito' }));
   expect(JSON.parse(window.localStorage.getItem('favoritePlayerIds'))).toEqual(['1']);
@@ -164,6 +173,8 @@ test('lists archived tournaments and opens their stored matches', async () => {
   expect(await screen.findByText('Australian Open')).toBeInTheDocument();
   expect(screen.getByText('254 partidas')).toBeInTheDocument();
   expect(screen.getByText('Campeão:', { exact: false })).toBeInTheDocument();
+  expect(screen.getByText('Grand Slam')).toBeInTheDocument();
+  expect(screen.getByText('Hard')).toBeInTheDocument();
   fireEvent.click(screen.getByText('Australian Open'));
 
   expect(await screen.findByRole('dialog', { name: 'Australian Open' })).toBeInTheDocument();

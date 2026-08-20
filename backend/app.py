@@ -146,6 +146,8 @@ def tournaments(
             "endDate": row["end_date"], "year": row["year"], "major": bool(row["major"]),
             "tours": json.loads(row["tours_json"]), "matchCount": row["match_count"],
             "completedCount": row["completed_count"] or 0,
+            "surface": row["surface"],
+            "category": (json.loads(row["categories_json"] or "{}")).get(tour) if tour else None,
             **final_by_tournament.get(row["tournament_id"], {"champion": None, "runnerUp": None}),
         }
         for row in rows
@@ -212,6 +214,63 @@ def archived_player_matches(tour: str, athlete_id: str, name: Optional[str] = No
         connection.close()
     matches = [json.loads(row[0]) for row in rows]
     return {"tour": tour, "athleteId": athlete_id, "count": len(matches), "matches": matches}
+
+
+@app.get("/api/players/{tour}/{athlete_id}/stats", tags=["Jogadores"])
+def player_career_stats(tour: str, athlete_id: str, name: Optional[str] = None) -> dict:
+    tour = tour.upper()
+    if tour not in {"ATP", "WTA"}:
+        raise HTTPException(status_code=400, detail="Circuito deve ser ATP ou WTA.")
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        rows = connection.execute(
+            """
+            SELECT history.payload_json, tournament.surface, tournament.categories_json
+            FROM match_history AS history
+            JOIN match_competitors AS player ON player.match_id = history.match_id
+            LEFT JOIN tournament_history AS tournament ON tournament.tournament_id = history.tournament_id
+            WHERE history.tour = ? AND history.state = 'post'
+              AND (player.competitor_id = ? OR lower(player.name) = lower(?))
+            ORDER BY history.match_date DESC
+            """,
+            (tour, athlete_id, name or ""),
+        ).fetchall()
+    except sqlite3.OperationalError as exc:
+        raise HTTPException(status_code=503, detail="Estatísticas ainda não foram geradas.") from exc
+    finally:
+        connection.close()
+
+    surfaces = {}
+    titles = {"Grand Slam": 0, "1000": 0, "500": 0, "250": 0, "Finals": 0}
+    title_list = []
+    for row in rows:
+        match = json.loads(row["payload_json"])
+        competitor = next(
+            (item for item in match.get("competitors") or [] if item.get("id") == athlete_id or (name and item.get("name", "").lower() == name.lower())),
+            None,
+        )
+        if not competitor:
+            continue
+        surface = row["surface"] or "Unknown"
+        bucket = surfaces.setdefault(surface, {"played": 0, "wins": 0, "losses": 0, "winRate": 0})
+        bucket["played"] += 1
+        if competitor.get("winner"):
+            bucket["wins"] += 1
+        else:
+            bucket["losses"] += 1
+        if competitor.get("winner") and (match.get("round") or "").lower() == "final" and "singles" in (match.get("discipline") or "").lower():
+            category = (json.loads(row["categories_json"] or "{}")).get(tour)
+            if category in titles:
+                titles[category] += 1
+                title_list.append({"tournament": match["tournament"], "date": match.get("date"), "category": category, "surface": surface})
+    for bucket in surfaces.values():
+        bucket["winRate"] = round(bucket["wins"] / bucket["played"] * 100) if bucket["played"] else 0
+    return {
+        "tour": tour, "athleteId": athlete_id, "matches": sum(item["played"] for item in surfaces.values()),
+        "wins": sum(item["wins"] for item in surfaces.values()), "losses": sum(item["losses"] for item in surfaces.values()),
+        "bySurface": surfaces, "titles": titles, "titleCount": sum(titles.values()), "titleList": title_list,
+    }
 
 
 @app.get("/api/head-to-head", tags=["Jogadores"])

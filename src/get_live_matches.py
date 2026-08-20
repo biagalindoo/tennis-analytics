@@ -8,6 +8,8 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from tournament_metadata import classify_tournament
+
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 PUBLIC_DATA_DIR = ROOT / "tennis-dashboard" / "public" / "data"
@@ -178,10 +180,17 @@ def _store_match_history(payload: dict) -> Path:
                 year INTEGER,
                 major INTEGER NOT NULL DEFAULT 0,
                 tours_json TEXT NOT NULL,
+                surface TEXT,
+                categories_json TEXT,
                 updated_at TEXT NOT NULL
             )
             """
         )
+        tournament_columns = {row[1] for row in connection.execute("PRAGMA table_info(tournament_history)")}
+        if "surface" not in tournament_columns:
+            connection.execute("ALTER TABLE tournament_history ADD COLUMN surface TEXT")
+        if "categories_json" not in tournament_columns:
+            connection.execute("ALTER TABLE tournament_history ADD COLUMN categories_json TEXT")
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS match_competitors (
@@ -198,11 +207,12 @@ def _store_match_history(payload: dict) -> Path:
         for tournament in payload.get("tournaments") or []:
             start_date = tournament.get("startDate")
             year = tournament.get("year") or (int(start_date[:4]) if start_date else None)
+            metadata = classify_tournament(tournament["name"], tournament.get("tours") or [], tournament.get("major", False))
             connection.execute(
                 """
                 INSERT INTO tournament_history
-                    (tournament_id, name, start_date, end_date, year, major, tours_json, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    (tournament_id, name, start_date, end_date, year, major, tours_json, surface, categories_json, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(tournament_id) DO UPDATE SET
                     name = excluded.name,
                     start_date = excluded.start_date,
@@ -210,11 +220,14 @@ def _store_match_history(payload: dict) -> Path:
                     year = excluded.year,
                     major = excluded.major,
                     tours_json = excluded.tours_json,
+                    surface = excluded.surface,
+                    categories_json = excluded.categories_json,
                     updated_at = excluded.updated_at
                 """,
                 (
                     tournament["id"], tournament["name"], start_date, tournament.get("endDate"),
-                    year, int(tournament.get("major", False)), json.dumps(tournament.get("tours") or []), updated_at,
+                    year, int(tournament.get("major", False)), json.dumps(tournament.get("tours") or []),
+                    metadata["surface"], json.dumps(metadata["categories"]), updated_at,
                 ),
             )
         for match in payload["matches"]:
