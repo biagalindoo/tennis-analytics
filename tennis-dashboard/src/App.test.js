@@ -55,6 +55,18 @@ const playerStats = {
   matches: 3, wins: 2, losses: 1, titleCount: 2,
   titles: { 'Grand Slam': 1, '1000': 1, '500': 0, '250': 0, Finals: 0 },
   bySurface: { Hard: { played: 3, wins: 2, losses: 1, winRate: 67 } },
+  recentForm: [
+    { result: 'W', opponent: 'Carlos Alcaraz', tournament: 'Cincinnati Open', date: '2026-08-18' },
+    { result: 'W', opponent: 'Alexander Zverev', tournament: 'Toronto', date: '2026-08-10' },
+    { result: 'L', opponent: 'Novak Djokovic', tournament: 'Wimbledon', date: '2026-07-12' },
+  ],
+  currentStreak: { type: 'W', count: 2 },
+  vsTop10: { played: 3, wins: 2, losses: 1, winRate: 67, basis: 'current-ranking' },
+};
+
+const careerStats = {
+  ...playerStats, year: null, matches: 6, wins: 5, losses: 1, titleCount: 4,
+  titles: { 'Grand Slam': 2, '1000': 1, '500': 1, '250': 0, Finals: 0 },
 };
 
 const leaders = {
@@ -83,7 +95,7 @@ beforeEach(() => {
     if (String(url).includes('/api/tournaments/archive-1/matches')) return Promise.resolve({ ok: true, json: () => Promise.resolve(events) });
     if (String(url).includes('/api/tournaments?')) return Promise.resolve({ ok: true, json: () => Promise.resolve(tournamentArchive) });
     if (String(url).includes('/api/players/ATP/1/matches')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ count: 3, matches: archivedPlayerMatches }) });
-    if (String(url).includes('/api/players/ATP/1/stats')) return Promise.resolve({ ok: true, json: () => Promise.resolve(playerStats) });
+    if (String(url).includes('/api/players/ATP/1/stats')) return Promise.resolve({ ok: true, json: () => Promise.resolve(String(url).includes('year=') ? playerStats : careerStats) });
     return Promise.resolve({
       ok: true,
       json: () => Promise.resolve(
@@ -253,8 +265,14 @@ test('opens a player profile with ranking, matches and favorite state', async ()
   await waitFor(() => expect(screen.getAllByText('vs. Carlos Alcaraz')).toHaveLength(3));
   expect(screen.getByText(/Primeiro registro salvo/)).toBeInTheDocument();
   expect(screen.getByText('US Open', { exact: false })).toBeInTheDocument();
-  expect(await screen.findByText('2 títulos')).toBeInTheDocument();
-  expect(screen.getByText('67%')).toBeInTheDocument();
+  expect(await screen.findByText('Títulos no arquivo do app')).toBeInTheDocument();
+  expect(screen.getByText('4 títulos')).toBeInTheDocument();
+  expect(screen.getByText('Títulos na temporada')).toBeInTheDocument();
+  expect(screen.getByText('2 títulos')).toBeInTheDocument();
+  expect(screen.getAllByText('67%')).toHaveLength(2);
+  expect(screen.getAllByText('2 vitórias')).toHaveLength(2);
+  expect(screen.getByText('2–1')).toBeInTheDocument();
+  expect(screen.getByText('Últimos 10 jogos')).toBeInTheDocument();
 
   fireEvent.change(screen.getByLabelText('Temporada das estatísticas'), { target: { value: '2025' } });
   await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('year=2025')));
@@ -268,12 +286,12 @@ test('shows season leaders and changes the performance criterion', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Líderes' }));
 
   expect(await screen.findByText('Top 10 ATP')).toBeInTheDocument();
-  expect(screen.getByText('3 títulos')).toBeInTheDocument();
+  expect(await screen.findByText('3 títulos')).toBeInTheDocument();
   expect(screen.getByText('11V · 1D · 12 jogos')).toBeInTheDocument();
 
   fireEvent.change(screen.getByLabelText('Critério dos líderes'), { target: { value: 'winRate' } });
   await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('metric=winRate')));
-  expect(screen.getByText('92%')).toBeInTheDocument();
+  expect(await screen.findByText('92%')).toBeInTheDocument();
 });
 
 test('compares two ranked players and shows their head-to-head match', async () => {

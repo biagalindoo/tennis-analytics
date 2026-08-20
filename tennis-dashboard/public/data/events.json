@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T21:45:52.684657+00:00",
+  "generatedAt": "2026-08-20T22:04:44.722896+00:00",
   "source": "ESPN Tennis Scoreboard",
   "refreshSeconds": 60,
   "tournaments": [
@@ -47,7 +47,7 @@
               "winner": false
             },
             {
-              "value": 0,
+              "value": 2,
               "tiebreak": null,
               "winner": false
             }
@@ -67,7 +67,7 @@
               "winner": true
             },
             {
-              "value": 1,
+              "value": 3,
               "tiebreak": null,
               "winner": false
             }

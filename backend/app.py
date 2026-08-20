@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field, field_validator
 ROOT = Path(__file__).resolve().parent.parent
 PUBLIC_DATA_DIR = ROOT / "tennis-dashboard" / "public" / "data"
 HISTORY_DB_PATH = ROOT / "data" / "tennis_history.db"
+CAREER_TOTALS_PATH = ROOT / "data" / "career_totals.json"
 
 app = FastAPI(
     title="Tennis Analytics API",
@@ -538,14 +539,33 @@ def player_career_stats(tour: str, athlete_id: str, name: Optional[str] = None, 
     surfaces = {}
     titles = {"Grand Slam": 0, "1000": 0, "500": 0, "250": 0, "Finals": 0}
     title_list = []
+    recent_form = []
+    all_results = []
+    top_ten_played = 0
+    top_ten_wins = 0
+    ranking_payload = _read_json("rankings.json")
+    top_ten_players = [player for player in (ranking_payload.get("tours", {}).get(tour, {}).get("players") or []) if player.get("rank", 999) <= 10]
+    top_ten_ids = {str(player.get("athleteId")) for player in top_ten_players if player.get("athleteId")}
+    top_ten_names = {str(player.get("player", "")).casefold() for player in top_ten_players}
     for row in rows:
         match = json.loads(row["payload_json"])
+        if "singles" not in (match.get("discipline") or "").lower():
+            continue
         competitor = next(
             (item for item in match.get("competitors") or [] if item.get("id") == athlete_id or (name and item.get("name", "").lower() == name.lower())),
             None,
         )
         if not competitor:
             continue
+        opponent = next((item for item in match.get("competitors") or [] if item is not competitor), None)
+        won = bool(competitor.get("winner"))
+        all_results.append("W" if won else "L")
+        if len(recent_form) < 10:
+            recent_form.append({"result": "W" if won else "L", "opponent": opponent.get("name") if opponent else "—", "tournament": match.get("tournament"), "date": match.get("date")})
+        if opponent and (str(opponent.get("id")) in top_ten_ids or str(opponent.get("name", "")).casefold() in top_ten_names):
+            top_ten_played += 1
+            if won:
+                top_ten_wins += 1
         surface = row["surface"] or "Unknown"
         bucket = surfaces.setdefault(surface, {"played": 0, "wins": 0, "losses": 0, "winRate": 0})
         bucket["played"] += 1
@@ -560,10 +580,26 @@ def player_career_stats(tour: str, athlete_id: str, name: Optional[str] = None, 
                 title_list.append({"tournament": match["tournament"], "date": match.get("date"), "category": category, "surface": surface})
     for bucket in surfaces.values():
         bucket["winRate"] = round(bucket["wins"] / bucket["played"] * 100) if bucket["played"] else 0
+    streak_result = all_results[0] if all_results else None
+    streak_count = 0
+    for result in all_results:
+        if result != streak_result:
+            break
+        streak_count += 1
+    official_career = None
+    if CAREER_TOTALS_PATH.exists():
+        try:
+            official_career = json.loads(CAREER_TOTALS_PATH.read_text(encoding="utf-8")).get("players", {}).get(f"{tour}:{athlete_id}")
+        except (OSError, json.JSONDecodeError):
+            official_career = None
     return {
         "tour": tour, "athleteId": athlete_id, "year": year, "matches": sum(item["played"] for item in surfaces.values()),
         "wins": sum(item["wins"] for item in surfaces.values()), "losses": sum(item["losses"] for item in surfaces.values()),
         "bySurface": surfaces, "titles": titles, "titleCount": sum(titles.values()), "titleList": title_list,
+        "recentForm": recent_form,
+        "currentStreak": {"type": streak_result, "count": streak_count},
+        "vsTop10": {"played": top_ten_played, "wins": top_ten_wins, "losses": top_ten_played - top_ten_wins, "winRate": round(top_ten_wins / top_ten_played * 100) if top_ten_played else 0, "basis": "current-ranking"},
+        "officialCareer": official_career,
     }
 
 

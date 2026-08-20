@@ -1,0 +1,32 @@
+{
+  "updatedAt": "2026-08-06T09:44:00Z",
+  "players": {
+    "WTA:3038": {
+      "player": "Aryna Sabalenka",
+      "singlesTitles": 24,
+      "titles": {
+        "Grand Slam": 4,
+        "1000": 11,
+        "500": 6,
+        "250": 2,
+        "Finals": 0,
+        "125": 1
+      },
+      "source": "https://www.wtatennis.com/players/320760/aryna-sabalenka/record",
+      "sourceLabel": "WTA oficial"
+    },
+    "ATP:3782": {
+      "player": "Carlos Alcaraz",
+      "singlesTitles": 26,
+      "titles": {
+        "Grand Slam": 7,
+        "1000": 8,
+        "500": 9,
+        "250": 2,
+        "Finals": 0
+      },
+      "source": "https://www.atptour.com/en/players/carlos-alcaraz/a0e2/titles-and-finals",
+      "sourceLabel": "ATP oficial"
+    }
+  }
+}

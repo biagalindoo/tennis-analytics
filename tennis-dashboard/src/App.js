@@ -125,6 +125,7 @@ function App() {
   const [archivedMatches, setArchivedMatches] = useState([]);
   const [remotePlayerMatches, setRemotePlayerMatches] = useState(null);
   const [remotePlayerStats, setRemotePlayerStats] = useState(null);
+  const [remoteCareerStats, setRemoteCareerStats] = useState(null);
   const [playerStatsYear, setPlayerStatsYear] = useState("2026");
   const [leaderYear, setLeaderYear] = useState("2026");
   const [leaderMetric, setLeaderMetric] = useState("titles");
@@ -380,6 +381,7 @@ function App() {
     if (!selectedPlayer) {
       setRemotePlayerMatches(null);
       setRemotePlayerStats(null);
+      setRemoteCareerStats(null);
       return;
     }
     const params = new URLSearchParams({ name: selectedPlayer.player, limit: "100" });
@@ -392,6 +394,11 @@ function App() {
       .then((response) => response.ok ? response.json() : null)
       .then(setRemotePlayerStats)
       .catch(() => setRemotePlayerStats(null));
+    const careerParams = new URLSearchParams({ name: selectedPlayer.player });
+    fetch(`/api/players/${tour}/${encodeURIComponent(selectedPlayer.athleteId)}/stats?${careerParams}`)
+      .then((response) => response.ok ? response.json() : null)
+      .then(setRemoteCareerStats)
+      .catch(() => setRemoteCareerStats(null));
   }, [selectedPlayer, tour, playerStatsYear]);
   const openPlayerProfile = (competitor) => {
     const competitorName = normalizeSearchValue(competitor.name);
@@ -1075,6 +1082,16 @@ function App() {
               <div><span>Aproveitamento</span><strong>{playerFinishedMatches.length ? `${Math.round((playerHistoricalWins / playerFinishedMatches.length) * 100)}%` : "—"}</strong></div>
             </div>
 
+            {remoteCareerStats && (
+              <div className="career-stats career-totals">
+                <div className="profile-section-title"><div><h3>{remoteCareerStats.officialCareer ? "Títulos oficiais de carreira" : "Títulos no arquivo do app"}</h3><small>{remoteCareerStats.officialCareer ? "Carreira completa de simples" : "Somente os anos armazenados no banco"}</small></div><span>{remoteCareerStats.officialCareer?.singlesTitles ?? remoteCareerStats.titleCount} títulos</span></div>
+                <div className="title-breakdown">
+                  {["Grand Slam", "1000", "500", "250", "Finals", ...(remoteCareerStats.officialCareer?.titles?.["125"] != null ? ["125"] : [])].map((category) => <div key={category}><strong>{(remoteCareerStats.officialCareer?.titles || remoteCareerStats.titles)?.[category] || 0}</strong><span>{category}</span></div>)}
+                </div>
+                {remoteCareerStats.officialCareer?.source && <a className="career-source" href={remoteCareerStats.officialCareer.source} target="_blank" rel="noreferrer">Fonte: {remoteCareerStats.officialCareer.sourceLabel || "oficial"} ↗</a>}
+              </div>
+            )}
+
             {remotePlayerStats && (
               <div className="career-stats">
                 <div className="profile-section-title stats-season-heading">
@@ -1083,7 +1100,16 @@ function App() {
                     {[2026, 2025].map((year) => <option value={year} key={year}>{year}</option>)}
                   </select>
                 </div>
-                <div className="profile-section-title title-summary"><h3>Títulos</h3><span>{remotePlayerStats.titleCount} títulos</span></div>
+                <div className="advanced-stats">
+                  <div><span>Sequência atual</span><strong className={remotePlayerStats.currentStreak?.type === "W" ? "positive" : "negative"}>{remotePlayerStats.currentStreak?.count ? `${remotePlayerStats.currentStreak.count} ${remotePlayerStats.currentStreak.type === "W" ? "vitórias" : "derrotas"}` : "—"}</strong></div>
+                  <div><span>Contra Top 10 atual</span><strong>{remotePlayerStats.vsTop10?.played ? `${remotePlayerStats.vsTop10.wins}–${remotePlayerStats.vsTop10.losses}` : "—"}</strong><small>{remotePlayerStats.vsTop10?.played ? `${remotePlayerStats.vsTop10.winRate}%` : "Sem jogos"}</small></div>
+                </div>
+                <div className="recent-form">
+                  <div className="profile-section-title"><h3>Últimos 10 jogos</h3><span>{remotePlayerStats.recentForm?.filter((item) => item.result === "W").length || 0} vitórias</span></div>
+                  <div className="form-strip">{(remotePlayerStats.recentForm || []).map((item, index) => <span className={item.result === "W" ? "win" : "loss"} key={`${item.date}-${index}`} title={`${item.result === "W" ? "Vitória" : "Derrota"} vs. ${item.opponent} · ${item.tournament}`}>{item.result === "W" ? "V" : "D"}</span>)}</div>
+                  <small className="stats-basis">Top 10 calculado usando o ranking atual.</small>
+                </div>
+                <div className="profile-section-title title-summary"><h3>Títulos na temporada</h3><span>{remotePlayerStats.titleCount} títulos</span></div>
                 <div className="title-breakdown">
                   {["Grand Slam", "1000", "500", "250", "Finals"].map((category) => <div key={category}><strong>{remotePlayerStats.titles?.[category] || 0}</strong><span>{category}</span></div>)}
                 </div>

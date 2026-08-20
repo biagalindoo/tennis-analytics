@@ -1094,6 +1094,12 @@ th {
   background: #102b17;
 }
 
+.career-totals { border-color: rgba(228, 189, 54, 0.35); background: linear-gradient(145deg, #102b17, #172d16); }
+.career-totals .profile-section-title > div { display: flex; flex-direction: column; gap: 3px; }
+.career-totals .profile-section-title h3 { margin: 0; }
+.career-totals .profile-section-title small { color: var(--muted); }
+.career-source { display: inline-block; margin-top: 12px; color: var(--accent); font-size: 11px; font-weight: 700; text-decoration: none; }
+
 .stats-season-heading {
   align-items: center;
 }
@@ -1117,6 +1123,19 @@ th {
 .title-summary {
   margin-top: 20px;
 }
+
+.advanced-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 16px; }
+.advanced-stats > div { display: flex; flex-direction: column; gap: 4px; padding: 13px; border-radius: 12px; background: #0c2413; }
+.advanced-stats span, .advanced-stats small, .stats-basis { color: var(--muted); font-size: 10px; }
+.advanced-stats strong { font-size: 18px; }
+.advanced-stats strong.positive { color: var(--accent); }
+.advanced-stats strong.negative { color: #e07a7a; }
+.recent-form { margin-top: 18px; }
+.form-strip { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.form-strip > span { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: white; cursor: help; font-size: 11px; font-weight: 900; }
+.form-strip > span.win { background: #4f8f52; }
+.form-strip > span.loss { background: #a84c4c; }
+.stats-basis { display: block; }
 
 .leaders-view {
   margin-top: 30px;
