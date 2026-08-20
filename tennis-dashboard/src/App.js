@@ -144,7 +144,7 @@ function App() {
     }
   });
   const [notificationSettings, setNotificationSettings] = useState({ beforeMatch: true, matchStart: true, scheduleChange: true, matchEnd: true });
-  const [authToken, setAuthToken] = useState(() => window.localStorage.getItem("tennisAuthToken") || "");
+  const [authToken, setAuthToken] = useState(() => window.localStorage.getItem("tennisAuthToken") || (window.localStorage.getItem("tennisHasSession") === "true" ? "cookie" : ""));
   const [currentUser, setCurrentUser] = useState(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState("login");
@@ -172,6 +172,7 @@ function App() {
       return [];
     }
   });
+  const sessionHeaders = useMemo(() => authToken && authToken !== "cookie" ? { Authorization: `Bearer ${authToken}` } : {}, [authToken]);
 
   useEffect(() => {
     fetchJsonWithFallback("/api/rankings", "/data/rankings.json")
@@ -185,12 +186,12 @@ function App() {
       setPreferencesReady(false);
       return;
     }
-    const headers = { Authorization: `Bearer ${authToken}` };
-    fetch("/api/auth/me", { headers })
+    const headers = authToken !== "cookie" ? { Authorization: `Bearer ${authToken}` } : {};
+    fetch("/api/auth/me", { headers, credentials: "same-origin" })
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then((data) => {
         setCurrentUser(data.user);
-        return fetch("/api/account/preferences", { headers });
+        return fetch("/api/account/preferences", { headers, credentials: "same-origin" });
       })
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then(async (preferences) => {
@@ -211,13 +212,18 @@ function App() {
           await fetch("/api/account/preferences", {
             method: "POST",
             headers: { ...headers, "Content-Type": "application/json" },
+            credentials: "same-origin",
             body: JSON.stringify({ favoritePlayerIds: localPlayers, favoriteMatchIds: localMatches, preferredTour: tour, notificationSettings }),
           });
         }
         setPreferencesReady(true);
+        window.localStorage.setItem("tennisHasSession", "true");
+        window.localStorage.removeItem("tennisAuthToken");
+        if (authToken !== "cookie") setAuthToken("cookie");
       })
       .catch(() => {
         window.localStorage.removeItem("tennisAuthToken");
+        window.localStorage.removeItem("tennisHasSession");
         setAuthToken("");
         setCurrentUser(null);
         setPreferencesReady(false);
@@ -278,10 +284,11 @@ function App() {
     if (!authToken || !currentUser || !preferencesReady) return;
     fetch("/api/account/preferences", {
       method: "POST",
-      headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" },
+      headers: { ...sessionHeaders, "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify({ favoritePlayerIds, favoriteMatchIds, preferredTour: tour, notificationSettings }),
     }).catch(() => {});
-  }, [authToken, currentUser, preferencesReady, favoritePlayerIds, favoriteMatchIds, tour, notificationSettings]);
+  }, [authToken, currentUser, preferencesReady, favoritePlayerIds, favoriteMatchIds, tour, notificationSettings, sessionHeaders]);
 
   useEffect(() => {
     window.localStorage.setItem("tennisAlerts", JSON.stringify(alerts));
@@ -509,13 +516,15 @@ function App() {
       const response = await fetch(`/api/auth/${authMode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify(body),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || "Não foi possível entrar.");
-      window.localStorage.setItem("tennisAuthToken", data.token);
+      window.localStorage.removeItem("tennisAuthToken");
+      window.localStorage.setItem("tennisHasSession", "true");
       setPreferencesReady(false);
-      setAuthToken(data.token);
+      setAuthToken("cookie");
       setCurrentUser(data.user);
       setAuthOpen(false);
     } catch (authRequestError) {
@@ -525,8 +534,9 @@ function App() {
     }
   };
   const logoutUser = () => {
-    if (authToken) fetch("/api/auth/logout", { method: "POST", headers: { Authorization: `Bearer ${authToken}` } }).catch(() => {});
+    if (authToken) fetch("/api/auth/logout", { method: "POST", headers: sessionHeaders, credentials: "same-origin" }).catch(() => {});
     window.localStorage.removeItem("tennisAuthToken");
+    window.localStorage.removeItem("tennisHasSession");
     setAuthToken("");
     setCurrentUser(null);
     setPreferencesReady(false);
@@ -549,7 +559,8 @@ function App() {
     try {
       const response = await fetch("/api/account/profile", {
         method: "POST",
-        headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" },
+        headers: { ...sessionHeaders, "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify(body),
       });
       const data = await response.json();
@@ -568,13 +579,13 @@ function App() {
     setAccountMessage("");
     setAccountSessions(null);
     setAccountOpen(true);
-    fetch("/api/account/sessions", { headers: { Authorization: `Bearer ${authToken}` } })
+    fetch("/api/account/sessions", { headers: sessionHeaders, credentials: "same-origin" })
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then(setAccountSessions)
       .catch(() => setAccountSessions({ count: 0, sessions: [] }));
   };
   const revokeOtherSessions = async () => {
-    const response = await fetch("/api/account/sessions/revoke-others", { method: "POST", headers: { Authorization: `Bearer ${authToken}` } });
+    const response = await fetch("/api/account/sessions/revoke-others", { method: "POST", headers: sessionHeaders, credentials: "same-origin" });
     const data = response.ok ? await response.json() : { revoked: 0 };
     setAccountSessions((current) => current ? { ...current, count: current.sessions.filter((session) => session.current).length, sessions: current.sessions.filter((session) => session.current) } : current);
     setAccountMessage(data.revoked ? `${data.revoked} outra(s) sessão(ões) encerrada(s).` : "Nenhuma outra sessão estava conectada.");

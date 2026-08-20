@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, Header, HTTPException, Query, Request
+from fastapi import Cookie, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 
@@ -151,10 +151,18 @@ def _new_session(connection: sqlite3.Connection, user_id: str, request: Optional
     return token, expires_at.isoformat()
 
 
-def _authenticated_user(authorization: Optional[str]) -> dict:
-    if not authorization or not authorization.startswith("Bearer "):
+def _resolve_session_token(authorization: Optional[str], tennis_session: Optional[str]) -> str:
+    if tennis_session:
+        return tennis_session
+    if authorization and authorization.startswith("Bearer "):
+        return authorization.removeprefix("Bearer ").strip()
+    raise HTTPException(status_code=401, detail="Sessão não informada.")
+
+
+def _authenticated_user(authorization: Optional[str], tennis_session: Optional[str] = None) -> dict:
+    token = _resolve_session_token(authorization, tennis_session)
+    if not token:
         raise HTTPException(status_code=401, detail="Sessão não informada.")
-    token = authorization.removeprefix("Bearer ").strip()
     connection = sqlite3.connect(HISTORY_DB_PATH)
     connection.row_factory = sqlite3.Row
     try:
@@ -200,7 +208,7 @@ def health() -> dict:
 
 
 @app.post("/api/auth/register", tags=["Conta"], status_code=201)
-def register(payload: RegisterPayload, request: Request) -> dict:
+def register(payload: RegisterPayload, request: Request, response: Response) -> dict:
     connection = sqlite3.connect(HISTORY_DB_PATH)
     connection.row_factory = sqlite3.Row
     user_id = secrets.token_urlsafe(12)
@@ -216,11 +224,12 @@ def register(payload: RegisterPayload, request: Request) -> dict:
         raise HTTPException(status_code=409, detail="Já existe uma conta com este e-mail.") from exc
     finally:
         connection.close()
-    return {"token": token, "expiresAt": expires_at, "user": {"id": user_id, "name": payload.name.strip(), "email": payload.email}}
+    response.set_cookie("tennis_session", token, max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=False, path="/")
+    return {"expiresAt": expires_at, "user": {"id": user_id, "name": payload.name.strip(), "email": payload.email}}
 
 
 @app.post("/api/auth/login", tags=["Conta"])
-def login(payload: LoginPayload, request: Request) -> dict:
+def login(payload: LoginPayload, request: Request, response: Response) -> dict:
     connection = sqlite3.connect(HISTORY_DB_PATH)
     connection.row_factory = sqlite3.Row
     try:
@@ -244,31 +253,36 @@ def login(payload: LoginPayload, request: Request) -> dict:
         connection.commit()
     finally:
         connection.close()
-    return {"token": token, "expiresAt": expires_at, "user": {"id": user["user_id"], "name": user["name"], "email": user["email"]}}
+    response.set_cookie("tennis_session", token, max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=False, path="/")
+    return {"expiresAt": expires_at, "user": {"id": user["user_id"], "name": user["name"], "email": user["email"]}}
 
 
 @app.get("/api/auth/me", tags=["Conta"])
-def current_user(authorization: Optional[str] = Header(default=None)) -> dict:
-    user = _authenticated_user(authorization)
+def current_user(response: Response, authorization: Optional[str] = Header(default=None), tennis_session: Optional[str] = Cookie(default=None)) -> dict:
+    user = _authenticated_user(authorization, tennis_session)
+    if not tennis_session and authorization and authorization.startswith("Bearer "):
+        response.set_cookie("tennis_session", authorization.removeprefix("Bearer ").strip(), max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=False, path="/")
     return {"user": {"id": user["user_id"], "name": user["name"], "email": user["email"], "createdAt": user["created_at"]}}
 
 
 @app.post("/api/auth/logout", tags=["Conta"], status_code=204)
-def logout(authorization: Optional[str] = Header(default=None)) -> None:
-    if authorization and authorization.startswith("Bearer "):
-        token = authorization.removeprefix("Bearer ").strip()
+def logout(response: Response, authorization: Optional[str] = Header(default=None), tennis_session: Optional[str] = Cookie(default=None)) -> None:
+    token = tennis_session or (authorization.removeprefix("Bearer ").strip() if authorization and authorization.startswith("Bearer ") else None)
+    if token:
         connection = sqlite3.connect(HISTORY_DB_PATH)
         try:
             connection.execute("DELETE FROM user_sessions WHERE token_hash = ?", (_token_hash(token),))
             connection.commit()
         finally:
             connection.close()
+    response.delete_cookie("tennis_session", path="/", samesite="strict")
 
 
 @app.get("/api/account/sessions", tags=["Conta"])
-def account_sessions(authorization: Optional[str] = Header(default=None)) -> dict:
-    user = _authenticated_user(authorization)
-    current_hash = _token_hash(authorization.removeprefix("Bearer ").strip())
+def account_sessions(authorization: Optional[str] = Header(default=None), tennis_session: Optional[str] = Cookie(default=None)) -> dict:
+    token = _resolve_session_token(authorization, tennis_session)
+    user = _authenticated_user(authorization, tennis_session)
+    current_hash = _token_hash(token)
     connection = sqlite3.connect(HISTORY_DB_PATH)
     connection.row_factory = sqlite3.Row
     try:
@@ -282,9 +296,10 @@ def account_sessions(authorization: Optional[str] = Header(default=None)) -> dic
 
 
 @app.post("/api/account/sessions/revoke-others", tags=["Conta"])
-def revoke_other_sessions(authorization: Optional[str] = Header(default=None)) -> dict:
-    user = _authenticated_user(authorization)
-    current_hash = _token_hash(authorization.removeprefix("Bearer ").strip())
+def revoke_other_sessions(authorization: Optional[str] = Header(default=None), tennis_session: Optional[str] = Cookie(default=None)) -> dict:
+    token = _resolve_session_token(authorization, tennis_session)
+    user = _authenticated_user(authorization, tennis_session)
+    current_hash = _token_hash(token)
     connection = sqlite3.connect(HISTORY_DB_PATH)
     try:
         cursor = connection.execute("DELETE FROM user_sessions WHERE user_id = ? AND token_hash <> ?", (user["user_id"], current_hash))
@@ -296,8 +311,8 @@ def revoke_other_sessions(authorization: Optional[str] = Header(default=None)) -
 
 
 @app.get("/api/account/preferences", tags=["Conta"])
-def account_preferences(authorization: Optional[str] = Header(default=None)) -> dict:
-    user = _authenticated_user(authorization)
+def account_preferences(authorization: Optional[str] = Header(default=None), tennis_session: Optional[str] = Cookie(default=None)) -> dict:
+    user = _authenticated_user(authorization, tennis_session)
     connection = sqlite3.connect(HISTORY_DB_PATH)
     connection.row_factory = sqlite3.Row
     try:
@@ -320,8 +335,8 @@ def account_preferences(authorization: Optional[str] = Header(default=None)) -> 
 
 
 @app.post("/api/account/preferences", tags=["Conta"])
-def save_account_preferences(payload: PreferencePayload, authorization: Optional[str] = Header(default=None)) -> dict:
-    user = _authenticated_user(authorization)
+def save_account_preferences(payload: PreferencePayload, authorization: Optional[str] = Header(default=None), tennis_session: Optional[str] = Cookie(default=None)) -> dict:
+    user = _authenticated_user(authorization, tennis_session)
     player_ids = list(dict.fromkeys(payload.favoritePlayerIds))
     match_ids = list(dict.fromkeys(payload.favoriteMatchIds))
     now = datetime.now(timezone.utc).isoformat()
@@ -347,8 +362,9 @@ def save_account_preferences(payload: PreferencePayload, authorization: Optional
 
 
 @app.post("/api/account/profile", tags=["Conta"])
-def update_account_profile(payload: AccountUpdatePayload, authorization: Optional[str] = Header(default=None)) -> dict:
-    user = _authenticated_user(authorization)
+def update_account_profile(payload: AccountUpdatePayload, authorization: Optional[str] = Header(default=None), tennis_session: Optional[str] = Cookie(default=None)) -> dict:
+    token = _resolve_session_token(authorization, tennis_session)
+    user = _authenticated_user(authorization, tennis_session)
     if bool(payload.currentPassword) != bool(payload.newPassword):
         raise HTTPException(status_code=400, detail="Informe a senha atual e a nova senha.")
     connection = sqlite3.connect(HISTORY_DB_PATH)
@@ -364,7 +380,7 @@ def update_account_profile(payload: AccountUpdatePayload, authorization: Optiona
             )
             connection.execute(
                 "DELETE FROM user_sessions WHERE user_id = ? AND token_hash <> ?",
-                (user["user_id"], _token_hash(authorization.removeprefix("Bearer ").strip())),
+                (user["user_id"], _token_hash(token)),
             )
         else:
             connection.execute("UPDATE users SET name = ? WHERE user_id = ?", (payload.name.strip(), user["user_id"]))

@@ -132,7 +132,8 @@ test('opens the account modal, signs in and persists the session', async () => {
   fireEvent.click(within(dialog).getByRole('button', { name: 'Entrar' }));
 
   expect(await screen.findByRole('button', { name: /Bia.*Minha conta/i })).toBeInTheDocument();
-  expect(window.localStorage.getItem('tennisAuthToken')).toBe('session-token');
+  expect(window.localStorage.getItem('tennisAuthToken')).toBeNull();
+  expect(window.localStorage.getItem('tennisHasSession')).toBe('true');
   expect(global.fetch).toHaveBeenCalledWith('/api/auth/login', expect.objectContaining({ method: 'POST' }));
 });
 
