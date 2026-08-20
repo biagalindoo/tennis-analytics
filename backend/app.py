@@ -53,6 +53,12 @@ class LoginPayload(BaseModel):
         return value.strip().lower()
 
 
+class PreferencePayload(BaseModel):
+    favoritePlayerIds: list[str] = Field(default_factory=list, max_length=500)
+    favoriteMatchIds: list[str] = Field(default_factory=list, max_length=500)
+    preferredTour: str = Field(default="ATP", pattern="^(ATP|WTA)$")
+
+
 def _initialize_auth_tables() -> None:
     HISTORY_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(HISTORY_DB_PATH)
@@ -71,6 +77,14 @@ def _initialize_auth_tables() -> None:
                 user_id TEXT NOT NULL,
                 expires_at TEXT NOT NULL,
                 created_at TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS user_preferences (
+                user_id TEXT PRIMARY KEY,
+                favorite_player_ids_json TEXT NOT NULL DEFAULT '[]',
+                favorite_match_ids_json TEXT NOT NULL DEFAULT '[]',
+                preferred_tour TEXT NOT NULL DEFAULT 'ATP',
+                updated_at TEXT NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             );
             """
@@ -211,6 +225,55 @@ def logout(authorization: Optional[str] = Header(default=None)) -> None:
             connection.commit()
         finally:
             connection.close()
+
+
+@app.get("/api/account/preferences", tags=["Conta"])
+def account_preferences(authorization: Optional[str] = Header(default=None)) -> dict:
+    user = _authenticated_user(authorization)
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        row = connection.execute(
+            "SELECT favorite_player_ids_json, favorite_match_ids_json, preferred_tour, updated_at FROM user_preferences WHERE user_id = ?",
+            (user["user_id"],),
+        ).fetchone()
+    finally:
+        connection.close()
+    if not row:
+        return {"initialized": False, "favoritePlayerIds": [], "favoriteMatchIds": [], "preferredTour": "ATP"}
+    return {
+        "initialized": True,
+        "favoritePlayerIds": json.loads(row["favorite_player_ids_json"]),
+        "favoriteMatchIds": json.loads(row["favorite_match_ids_json"]),
+        "preferredTour": row["preferred_tour"],
+        "updatedAt": row["updated_at"],
+    }
+
+
+@app.post("/api/account/preferences", tags=["Conta"])
+def save_account_preferences(payload: PreferencePayload, authorization: Optional[str] = Header(default=None)) -> dict:
+    user = _authenticated_user(authorization)
+    player_ids = list(dict.fromkeys(payload.favoritePlayerIds))
+    match_ids = list(dict.fromkeys(payload.favoriteMatchIds))
+    now = datetime.now(timezone.utc).isoformat()
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    try:
+        connection.execute(
+            """
+            INSERT INTO user_preferences (user_id, favorite_player_ids_json, favorite_match_ids_json, preferred_tour, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                favorite_player_ids_json = excluded.favorite_player_ids_json,
+                favorite_match_ids_json = excluded.favorite_match_ids_json,
+                preferred_tour = excluded.preferred_tour,
+                updated_at = excluded.updated_at
+            """,
+            (user["user_id"], json.dumps(player_ids), json.dumps(match_ids), payload.preferredTour, now),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+    return {"saved": True, "favoritePlayerIds": player_ids, "favoriteMatchIds": match_ids, "preferredTour": payload.preferredTour, "updatedAt": now}
 
 
 @app.get("/api/rankings", tags=["Rankings"])

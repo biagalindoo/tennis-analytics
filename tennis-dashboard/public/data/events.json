@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T18:11:07.158362+00:00",
+  "generatedAt": "2026-08-20T18:16:11.101019+00:00",
   "source": "ESPN Tennis Scoreboard",
   "refreshSeconds": 60,
   "tournaments": [
@@ -14,7 +14,7 @@
         "WTA"
       ],
       "matchCount": 324,
-      "liveCount": 3
+      "liveCount": 2
     }
   ],
   "matches": [
@@ -28,7 +28,7 @@
       "date": "2026-08-20T16:45Z",
       "state": "in",
       "status": "In Progress",
-      "detail": "2nd Set",
+      "detail": "3rd Set",
       "venue": "Cincinnati, USA",
       "court": "Grandstand",
       "competitors": [
@@ -49,6 +49,11 @@
               "value": 3,
               "tiebreak": null,
               "winner": false
+            },
+            {
+              "value": 0,
+              "tiebreak": 3,
+              "winner": false
             }
           ]
         },
@@ -66,64 +71,13 @@
               "winner": false
             },
             {
-              "value": 5,
-              "tiebreak": null,
-              "winner": false
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "182006",
-      "tournamentId": "718-2026",
-      "tournament": "Cincinnati Open",
-      "tour": "ATP",
-      "discipline": "Men's Doubles",
-      "round": "Round 2",
-      "date": "2026-08-20T17:00Z",
-      "state": "in",
-      "status": "In Progress",
-      "detail": "2nd Set",
-      "venue": "Cincinnati, USA",
-      "court": "Tony Trabert Stadium 3",
-      "competitors": [
-        {
-          "id": "2842-3159",
-          "name": "Adam Pavlasek / Patrik Rikl",
-          "shortName": "A. Pavlasek / P. Rikl",
-          "country": "Czechia",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/cze.png",
-          "winner": false,
-          "sets": [
-            {
-              "value": 3,
-              "tiebreak": null,
-              "winner": false
-            },
-            {
-              "value": 4,
-              "tiebreak": null,
-              "winner": false
-            }
-          ]
-        },
-        {
-          "id": "279-3548",
-          "name": "Simone Bolelli / Andrea Vavassori",
-          "shortName": "S. Bolelli / A. Vavassori",
-          "country": "Italy",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
-          "winner": false,
-          "sets": [
-            {
               "value": 6,
               "tiebreak": null,
               "winner": true
             },
             {
-              "value": 5,
-              "tiebreak": null,
+              "value": 0,
+              "tiebreak": 1,
               "winner": false
             }
           ]
@@ -158,7 +112,7 @@
               "winner": true
             },
             {
-              "value": 0,
+              "value": 1,
               "tiebreak": null,
               "winner": false
             }
@@ -391,118 +345,16 @@
       ]
     },
     {
-      "id": "181915",
-      "tournamentId": "718-2026",
-      "tournament": "Cincinnati Open",
-      "tour": "ATP",
-      "discipline": "Men's Singles",
-      "round": "Quarterfinal",
-      "date": "2026-08-21T04:00Z",
-      "state": "pre",
-      "status": "Scheduled",
-      "detail": "M/d - 'TBD'",
-      "venue": "Cincinnati, USA",
-      "court": "",
-      "competitors": [
-        {
-          "id": "2708",
-          "name": "Frances Tiafoe",
-          "shortName": "F. Tiafoe",
-          "country": "USA",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
-          "winner": false,
-          "sets": []
-        },
-        {
-          "id": "3764",
-          "name": "Lorenzo Musetti",
-          "shortName": "L. Musetti",
-          "country": "Italy",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
-          "winner": false,
-          "sets": []
-        }
-      ]
-    },
-    {
-      "id": "181916",
-      "tournamentId": "718-2026",
-      "tournament": "Cincinnati Open",
-      "tour": "ATP",
-      "discipline": "Men's Singles",
-      "round": "Quarterfinal",
-      "date": "2026-08-21T04:00Z",
-      "state": "pre",
-      "status": "Scheduled",
-      "detail": "M/d - 'TBD'",
-      "venue": "Cincinnati, USA",
-      "court": "",
-      "competitors": [
-        {
-          "id": "3774",
-          "name": "Brandon Nakashima",
-          "shortName": "B. Nakashima",
-          "country": "USA",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
-          "winner": false,
-          "sets": []
-        },
-        {
-          "id": "2946",
-          "name": "Taylor Fritz",
-          "shortName": "T. Fritz",
-          "country": "USA",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
-          "winner": false,
-          "sets": []
-        }
-      ]
-    },
-    {
-      "id": "182367",
-      "tournamentId": "718-2026",
-      "tournament": "Cincinnati Open",
-      "tour": "WTA",
-      "discipline": "Women's Singles",
-      "round": "Quarterfinal",
-      "date": "2026-08-21T04:00Z",
-      "state": "pre",
-      "status": "Scheduled",
-      "detail": "M/d - 'TBD'",
-      "venue": "Cincinnati, USA",
-      "court": "",
-      "competitors": [
-        {
-          "id": "1556",
-          "name": "Madison Keys",
-          "shortName": "M. Keys",
-          "country": "USA",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
-          "winner": false,
-          "sets": []
-        },
-        {
-          "id": "7819",
-          "name": "Sara Bejlek",
-          "shortName": "S. Bejlek",
-          "country": "Czechia",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/cze.png",
-          "winner": false,
-          "sets": []
-        }
-      ]
-    },
-    {
       "id": "182368",
       "tournamentId": "718-2026",
       "tournament": "Cincinnati Open",
       "tour": "WTA",
       "discipline": "Women's Singles",
       "round": "Quarterfinal",
-      "date": "2026-08-21T04:00Z",
+      "date": "2026-08-21T00:30Z",
       "state": "pre",
       "status": "Scheduled",
-      "detail": "M/d - 'TBD'",
+      "detail": "Thu, August 20th at 8:30 PM EDT",
       "venue": "Cincinnati, USA",
       "court": "",
       "competitors": [
@@ -527,34 +379,34 @@
       ]
     },
     {
-      "id": "182020",
+      "id": "182467",
       "tournamentId": "718-2026",
       "tournament": "Cincinnati Open",
-      "tour": "ATP",
-      "discipline": "Men's Doubles",
-      "round": "Quarterfinal",
-      "date": "2026-08-21T04:00Z",
+      "tour": "WTA",
+      "discipline": "Women's Doubles",
+      "round": "Semifinal",
+      "date": "2026-08-21T15:00Z",
       "state": "pre",
       "status": "Scheduled",
-      "detail": "M/d - 'TBD'",
+      "detail": "Fri, August 21st at 11:00 AM EDT",
       "venue": "Cincinnati, USA",
       "court": "",
       "competitors": [
         {
-          "id": "3601-3687",
-          "name": "Sadio Doumbia / Fabien Reboul",
-          "shortName": "S. Doumbia / F. Reboul",
-          "country": "France",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/fra.png",
+          "id": "4477-1455",
+          "name": "Magali Kempen / Alexandra Panova",
+          "shortName": "M. Kempen / A. Panova",
+          "country": "Belgium",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/bel.png",
           "winner": false,
           "sets": []
         },
         {
-          "id": "2688-720",
-          "name": "Hugo Nys / Edouard Roger-Vasselin",
-          "shortName": "H. Nys / E. Roger-Vasselin",
-          "country": "Monaco",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/mon.png",
+          "id": "-3--4",
+          "name": "TBD / TBD",
+          "shortName": "TBD / TBD",
+          "country": "",
+          "flag": "",
           "winner": false,
           "sets": []
         }
@@ -567,10 +419,10 @@
       "tour": "ATP",
       "discipline": "Men's Doubles",
       "round": "Quarterfinal",
-      "date": "2026-08-21T04:00Z",
+      "date": "2026-08-21T15:00Z",
       "state": "pre",
       "status": "Scheduled",
-      "detail": "M/d - 'TBD'",
+      "detail": "Fri, August 21st at 11:00 AM EDT",
       "venue": "Cincinnati, USA",
       "court": "",
       "competitors": [
@@ -595,50 +447,16 @@
       ]
     },
     {
-      "id": "182028",
-      "tournamentId": "718-2026",
-      "tournament": "Cincinnati Open",
-      "tour": "ATP",
-      "discipline": "Men's Doubles",
-      "round": "Quarterfinal",
-      "date": "2026-08-21T04:00Z",
-      "state": "pre",
-      "status": "Scheduled",
-      "detail": "M/d - 'TBD'",
-      "venue": "Cincinnati, USA",
-      "court": "",
-      "competitors": [
-        {
-          "id": "2725-2434",
-          "name": "Orlando Luz / Rafael Matos",
-          "shortName": "O. Luz / R. Matos",
-          "country": "Brazil",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/bra.png",
-          "winner": false,
-          "sets": []
-        },
-        {
-          "id": "-3--4",
-          "name": "TBD / TBD",
-          "shortName": "TBD / TBD",
-          "country": "",
-          "flag": "",
-          "winner": false,
-          "sets": []
-        }
-      ]
-    },
-    {
       "id": "182030",
       "tournamentId": "718-2026",
       "tournament": "Cincinnati Open",
       "tour": "ATP",
       "discipline": "Men's Doubles",
       "round": "Quarterfinal",
-      "date": "2026-08-21T04:00Z",
+      "date": "2026-08-21T15:00Z",
       "state": "pre",
       "status": "Scheduled",
-      "detail": "M/d - 'TBD'",
+      "detail": "Fri, August 21st at 11:00 AM EDT",
       "venue": "Cincinnati, USA",
       "court": "",
       "competitors": [
@@ -657,6 +475,176 @@
           "shortName": "TBD / TBD",
           "country": "",
           "flag": "",
+          "winner": false,
+          "sets": []
+        }
+      ]
+    },
+    {
+      "id": "182020",
+      "tournamentId": "718-2026",
+      "tournament": "Cincinnati Open",
+      "tour": "ATP",
+      "discipline": "Men's Doubles",
+      "round": "Quarterfinal",
+      "date": "2026-08-21T16:30Z",
+      "state": "pre",
+      "status": "Scheduled",
+      "detail": "Fri, August 21st at 12:30 PM EDT",
+      "venue": "Cincinnati, USA",
+      "court": "",
+      "competitors": [
+        {
+          "id": "3601-3687",
+          "name": "Sadio Doumbia / Fabien Reboul",
+          "shortName": "S. Doumbia / F. Reboul",
+          "country": "France",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/fra.png",
+          "winner": false,
+          "sets": []
+        },
+        {
+          "id": "2688-720",
+          "name": "Hugo Nys / Edouard Roger-Vasselin",
+          "shortName": "H. Nys / E. Roger-Vasselin",
+          "country": "Monaco",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/mon.png",
+          "winner": false,
+          "sets": []
+        }
+      ]
+    },
+    {
+      "id": "182028",
+      "tournamentId": "718-2026",
+      "tournament": "Cincinnati Open",
+      "tour": "ATP",
+      "discipline": "Men's Doubles",
+      "round": "Quarterfinal",
+      "date": "2026-08-21T16:30Z",
+      "state": "pre",
+      "status": "Scheduled",
+      "detail": "Fri, August 21st at 12:30 PM EDT",
+      "venue": "Cincinnati, USA",
+      "court": "",
+      "competitors": [
+        {
+          "id": "2725-2434",
+          "name": "Orlando Luz / Rafael Matos",
+          "shortName": "O. Luz / R. Matos",
+          "country": "Brazil",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/bra.png",
+          "winner": false,
+          "sets": []
+        },
+        {
+          "id": "279-3548",
+          "name": "Simone Bolelli / Andrea Vavassori",
+          "shortName": "S. Bolelli / A. Vavassori",
+          "country": "Italy",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
+          "winner": false,
+          "sets": []
+        }
+      ]
+    },
+    {
+      "id": "182367",
+      "tournamentId": "718-2026",
+      "tournament": "Cincinnati Open",
+      "tour": "WTA",
+      "discipline": "Women's Singles",
+      "round": "Quarterfinal",
+      "date": "2026-08-21T17:00Z",
+      "state": "pre",
+      "status": "Scheduled",
+      "detail": "Fri, August 21st at 1:00 PM EDT",
+      "venue": "Cincinnati, USA",
+      "court": "",
+      "competitors": [
+        {
+          "id": "1556",
+          "name": "Madison Keys",
+          "shortName": "M. Keys",
+          "country": "USA",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
+          "winner": false,
+          "sets": []
+        },
+        {
+          "id": "7819",
+          "name": "Sara Bejlek",
+          "shortName": "S. Bejlek",
+          "country": "Czechia",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/cze.png",
+          "winner": false,
+          "sets": []
+        }
+      ]
+    },
+    {
+      "id": "181916",
+      "tournamentId": "718-2026",
+      "tournament": "Cincinnati Open",
+      "tour": "ATP",
+      "discipline": "Men's Singles",
+      "round": "Quarterfinal",
+      "date": "2026-08-21T19:00Z",
+      "state": "pre",
+      "status": "Scheduled",
+      "detail": "Fri, August 21st at 3:00 PM EDT",
+      "venue": "Cincinnati, USA",
+      "court": "",
+      "competitors": [
+        {
+          "id": "3774",
+          "name": "Brandon Nakashima",
+          "shortName": "B. Nakashima",
+          "country": "USA",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
+          "winner": false,
+          "sets": []
+        },
+        {
+          "id": "2946",
+          "name": "Taylor Fritz",
+          "shortName": "T. Fritz",
+          "country": "USA",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
+          "winner": false,
+          "sets": []
+        }
+      ]
+    },
+    {
+      "id": "181915",
+      "tournamentId": "718-2026",
+      "tournament": "Cincinnati Open",
+      "tour": "ATP",
+      "discipline": "Men's Singles",
+      "round": "Quarterfinal",
+      "date": "2026-08-21T23:00Z",
+      "state": "pre",
+      "status": "Scheduled",
+      "detail": "Fri, August 21st at 7:00 PM EDT",
+      "venue": "Cincinnati, USA",
+      "court": "",
+      "competitors": [
+        {
+          "id": "2708",
+          "name": "Frances Tiafoe",
+          "shortName": "F. Tiafoe",
+          "country": "USA",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
+          "winner": false,
+          "sets": []
+        },
+        {
+          "id": "3764",
+          "name": "Lorenzo Musetti",
+          "shortName": "L. Musetti",
+          "country": "Italy",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
           "winner": false,
           "sets": []
         }
@@ -825,40 +813,6 @@
           "id": "-3",
           "name": "TBD",
           "shortName": "TBD",
-          "country": "",
-          "flag": "",
-          "winner": false,
-          "sets": []
-        }
-      ]
-    },
-    {
-      "id": "182467",
-      "tournamentId": "718-2026",
-      "tournament": "Cincinnati Open",
-      "tour": "WTA",
-      "discipline": "Women's Doubles",
-      "round": "Semifinal",
-      "date": "2026-08-22T04:00Z",
-      "state": "pre",
-      "status": "Scheduled",
-      "detail": "M/d - 'TBD'",
-      "venue": "Cincinnati, USA",
-      "court": "",
-      "competitors": [
-        {
-          "id": "4477-1455",
-          "name": "Magali Kempen / Alexandra Panova",
-          "shortName": "M. Kempen / A. Panova",
-          "country": "Belgium",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/bel.png",
-          "winner": false,
-          "sets": []
-        },
-        {
-          "id": "-3--4",
-          "name": "TBD / TBD",
-          "shortName": "TBD / TBD",
           "country": "",
           "flag": "",
           "winner": false,
@@ -18668,6 +18622,62 @@
             {
               "value": 1,
               "tiebreak": 10,
+              "winner": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "182006",
+      "tournamentId": "718-2026",
+      "tournament": "Cincinnati Open",
+      "tour": "ATP",
+      "discipline": "Men's Doubles",
+      "round": "Round 2",
+      "date": "2026-08-20T17:00Z",
+      "state": "post",
+      "status": "Final",
+      "detail": "Final",
+      "venue": "Cincinnati, USA",
+      "court": "Tony Trabert Stadium 3",
+      "competitors": [
+        {
+          "id": "2842-3159",
+          "name": "Adam Pavlasek / Patrik Rikl",
+          "shortName": "A. Pavlasek / P. Rikl",
+          "country": "Czechia",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/cze.png",
+          "winner": false,
+          "sets": [
+            {
+              "value": 3,
+              "tiebreak": null,
+              "winner": false
+            },
+            {
+              "value": 4,
+              "tiebreak": null,
+              "winner": false
+            }
+          ]
+        },
+        {
+          "id": "279-3548",
+          "name": "Simone Bolelli / Andrea Vavassori",
+          "shortName": "S. Bolelli / A. Vavassori",
+          "country": "Italy",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
+          "winner": true,
+          "sets": [
+            {
+              "value": 6,
+              "tiebreak": null,
+              "winner": true
+            },
+            {
+              "value": 6,
+              "tiebreak": null,
               "winner": true
             }
           ]

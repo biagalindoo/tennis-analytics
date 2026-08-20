@@ -148,6 +148,7 @@ function App() {
   const [authMode, setAuthMode] = useState("login");
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [preferencesReady, setPreferencesReady] = useState(false);
   const previousMatchStates = useRef(new Map());
   const [comparePlayerIds, setComparePlayerIds] = useState(["", ""]);
   const [favoriteMatchIds, setFavoriteMatchIds] = useState(() => {
@@ -174,16 +175,47 @@ function App() {
   useEffect(() => {
     if (!authToken) {
       setCurrentUser(null);
+      setPreferencesReady(false);
       return;
     }
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${authToken}` } })
+    const headers = { Authorization: `Bearer ${authToken}` };
+    fetch("/api/auth/me", { headers })
       .then((response) => response.ok ? response.json() : Promise.reject())
-      .then((data) => setCurrentUser(data.user))
+      .then((data) => {
+        setCurrentUser(data.user);
+        return fetch("/api/account/preferences", { headers });
+      })
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then(async (preferences) => {
+        if (preferences.initialized) {
+          setFavoritePlayerIds(preferences.favoritePlayerIds || []);
+          setFavoriteMatchIds(preferences.favoriteMatchIds || []);
+          setTour(preferences.preferredTour || "ATP");
+        } else {
+          let localPlayers = [];
+          let localMatches = [];
+          try {
+            localPlayers = JSON.parse(window.localStorage.getItem("favoritePlayerIds")) || [];
+            localMatches = JSON.parse(window.localStorage.getItem("favoriteMatchIds")) || [];
+          } catch {
+            // Preferências locais inválidas são ignoradas durante a migração.
+          }
+          await fetch("/api/account/preferences", {
+            method: "POST",
+            headers: { ...headers, "Content-Type": "application/json" },
+            body: JSON.stringify({ favoritePlayerIds: localPlayers, favoriteMatchIds: localMatches, preferredTour: tour }),
+          });
+        }
+        setPreferencesReady(true);
+      })
       .catch(() => {
         window.localStorage.removeItem("tennisAuthToken");
         setAuthToken("");
         setCurrentUser(null);
+        setPreferencesReady(false);
       });
+    // A preferência de circuito é carregada depois da autenticação; não deve reiniciar este fluxo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken]);
 
   useEffect(() => {
@@ -233,6 +265,15 @@ function App() {
   useEffect(() => {
     window.localStorage.setItem("favoritePlayerIds", JSON.stringify(favoritePlayerIds));
   }, [favoritePlayerIds]);
+
+  useEffect(() => {
+    if (!authToken || !currentUser || !preferencesReady) return;
+    fetch("/api/account/preferences", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ favoritePlayerIds, favoriteMatchIds, preferredTour: tour }),
+    }).catch(() => {});
+  }, [authToken, currentUser, preferencesReady, favoritePlayerIds, favoriteMatchIds, tour]);
 
   useEffect(() => {
     window.localStorage.setItem("tennisAlerts", JSON.stringify(alerts));
@@ -457,6 +498,7 @@ function App() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || "Não foi possível entrar.");
       window.localStorage.setItem("tennisAuthToken", data.token);
+      setPreferencesReady(false);
       setAuthToken(data.token);
       setCurrentUser(data.user);
       setAuthOpen(false);
@@ -471,6 +513,10 @@ function App() {
     window.localStorage.removeItem("tennisAuthToken");
     setAuthToken("");
     setCurrentUser(null);
+    setPreferencesReady(false);
+    setFavoritePlayerIds([]);
+    setFavoriteMatchIds([]);
+    setTour("ATP");
   };
   const liveCount = (events?.matches || []).filter(
     (match) => match.tour === tour && match.state === "in"

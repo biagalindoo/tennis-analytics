@@ -65,13 +65,18 @@ const leaders = {
   ],
 };
 
+let accountPreferences;
+
 beforeEach(() => {
   window.localStorage.clear();
-  global.fetch = jest.fn((url) => {
+  accountPreferences = { initialized: false, favoritePlayerIds: [], favoriteMatchIds: [], preferredTour: 'ATP' };
+  global.fetch = jest.fn((url, options = {}) => {
     if (String(url).includes('/api/auth/login')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ token: 'session-token', user: { id: 'user-1', name: 'Bia', email: 'bia@example.com' } }) });
     if (String(url).includes('/api/auth/register')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ token: 'new-session-token', user: { id: 'user-2', name: 'Beatriz', email: 'beatriz@example.com' } }) });
     if (String(url).includes('/api/auth/logout')) return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
     if (String(url).includes('/api/auth/me')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ user: { id: 'user-1', name: 'Bia', email: 'bia@example.com' } }) });
+    if (String(url).includes('/api/account/preferences') && options.method === 'POST') return Promise.resolve({ ok: true, json: () => Promise.resolve({ saved: true }) });
+    if (String(url).includes('/api/account/preferences')) return Promise.resolve({ ok: true, json: () => Promise.resolve(accountPreferences) });
     if (String(url).includes('/api/head-to-head')) return new Promise(() => {});
     if (String(url).includes('/api/leaders?')) return Promise.resolve({ ok: true, json: () => Promise.resolve(leaders) });
     if (String(url).includes('/api/tournaments/archive-1/matches')) return Promise.resolve({ ok: true, json: () => Promise.resolve(events) });
@@ -125,6 +130,16 @@ test('switches from login to account registration', async () => {
   expect(screen.getByRole('dialog', { name: 'Crie sua conta' })).toBeInTheDocument();
   expect(screen.getByLabelText('Nome')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Criar conta' })).toBeInTheDocument();
+});
+
+test('restores favorites and tour preference from the signed-in account', async () => {
+  accountPreferences = { initialized: true, favoritePlayerIds: ['1'], favoriteMatchIds: ['match-1'], preferredTour: 'ATP' };
+  window.localStorage.setItem('tennisAuthToken', 'session-token');
+  render(<App />);
+
+  expect(await screen.findByText('Próximo jogo · até 7 dias')).toBeInTheDocument();
+  expect(JSON.parse(window.localStorage.getItem('favoritePlayerIds'))).toEqual(['1']);
+  expect(JSON.parse(window.localStorage.getItem('favoriteMatchIds'))).toEqual(['match-1']);
 });
 
 test('shows only one relevant match per favorite player on the today page', async () => {
