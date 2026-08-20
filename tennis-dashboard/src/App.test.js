@@ -89,6 +89,8 @@ beforeEach(() => {
     if (String(url).includes('/api/auth/register')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ token: 'new-session-token', user: { id: 'user-2', name: 'Beatriz', email: 'beatriz@example.com' } }) });
     if (String(url).includes('/api/auth/logout')) return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
     if (String(url).includes('/api/auth/me')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ user: { id: 'user-1', name: 'Bia', email: 'bia@example.com' } }) });
+    if (String(url).includes('/api/account/email-verification/request')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ verified: false, message: 'Código de confirmação gerado.', developmentCode: '123456' }) });
+    if (String(url).includes('/api/account/email-verification/confirm')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ verified: true, message: 'E-mail confirmado com sucesso.' }) });
     if (String(url).includes('/api/account/sessions/revoke-others')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ revoked: 1 }) });
     if (String(url).includes('/api/account/sessions')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ count: 2, sessions: [{ id: 'current', current: true, createdAt: '2026-08-20T10:00:00Z', lastUsedAt: '2026-08-20T12:00:00Z' }, { id: 'other', current: false, createdAt: '2026-08-19T10:00:00Z', lastUsedAt: '2026-08-19T12:00:00Z' }] }) });
     if (String(url).includes('/api/account/preferences') && options.method === 'POST') return Promise.resolve({ ok: true, json: () => Promise.resolve({ saved: true }) });
@@ -178,6 +180,19 @@ test('lists active sessions and revokes other devices', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Encerrar outros dispositivos' }));
   expect(await screen.findByText('1 outra(s) sessão(ões) encerrada(s).')).toBeInTheDocument();
   expect(screen.queryByText('Outro dispositivo')).not.toBeInTheDocument();
+});
+
+test('verifies the email of an existing account', async () => {
+  window.localStorage.setItem('tennisAuthToken', 'session-token');
+  render(<App />);
+  fireEvent.click(await screen.findByRole('button', { name: /Bia.*Minha conta/i }));
+
+  expect(screen.getByText('Não verificado')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Gerar código' }));
+  expect(await screen.findByDisplayValue('123456')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
+  expect(await screen.findByText('✓ Verificado')).toBeInTheDocument();
+  expect(screen.getByText('E-mail confirmado com sucesso.')).toBeInTheDocument();
 });
 
 test('switches from login to account registration', async () => {

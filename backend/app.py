@@ -82,6 +82,10 @@ class ResetPasswordPayload(BaseModel):
     newPassword: str = Field(min_length=8, max_length=128)
 
 
+class EmailVerificationPayload(BaseModel):
+    code: str = Field(pattern="^[0-9]{6}$")
+
+
 def _initialize_auth_tables() -> None:
     HISTORY_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(HISTORY_DB_PATH)
@@ -124,6 +128,14 @@ def _initialize_auth_tables() -> None:
                 requested_at TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_reset_requests_lookup ON password_reset_requests(email, ip_address, requested_at);
+            CREATE TABLE IF NOT EXISTS email_verification_tokens (
+                user_id TEXT PRIMARY KEY,
+                code_hash TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                attempts INTEGER NOT NULL DEFAULT 0,
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+            );
             CREATE TABLE IF NOT EXISTS user_preferences (
                 user_id TEXT PRIMARY KEY,
                 favorite_player_ids_json TEXT NOT NULL DEFAULT '[]',
@@ -144,6 +156,9 @@ def _initialize_auth_tables() -> None:
             connection.execute("ALTER TABLE user_sessions ADD COLUMN ip_address TEXT")
         if "last_used_at" not in session_columns:
             connection.execute("ALTER TABLE user_sessions ADD COLUMN last_used_at TEXT")
+        user_columns = {row[1] for row in connection.execute("PRAGMA table_info(users)").fetchall()}
+        if "email_verified_at" not in user_columns:
+            connection.execute("ALTER TABLE users ADD COLUMN email_verified_at TEXT")
         connection.commit()
     finally:
         connection.close()
@@ -168,6 +183,16 @@ def _password_matches(password: str, encoded: str) -> bool:
 
 def _token_hash(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _create_email_verification(connection: sqlite3.Connection, user_id: str) -> Optional[str]:
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    now = datetime.now(timezone.utc)
+    connection.execute(
+        "INSERT INTO email_verification_tokens (user_id, code_hash, expires_at, created_at, attempts) VALUES (?, ?, ?, ?, 0) ON CONFLICT(user_id) DO UPDATE SET code_hash = excluded.code_hash, expires_at = excluded.expires_at, created_at = excluded.created_at, attempts = 0",
+        (user_id, _token_hash(code), (now + timedelta(minutes=15)).isoformat(), now.isoformat()),
+    )
+    return code if os.getenv("APP_ENV", "development") != "production" else None
 
 
 def _new_session(connection: sqlite3.Connection, user_id: str, request: Optional[Request] = None) -> tuple[str, str]:
@@ -248,6 +273,7 @@ def register(payload: RegisterPayload, request: Request, response: Response) -> 
             "INSERT INTO users (user_id, name, email, password_hash, created_at) VALUES (?, ?, ?, ?, ?)",
             (user_id, payload.name.strip(), payload.email, _password_hash(payload.password), now),
         )
+        verification_code = _create_email_verification(connection, user_id)
         token, expires_at = _new_session(connection, user_id, request)
         connection.commit()
     except sqlite3.IntegrityError as exc:
@@ -255,7 +281,10 @@ def register(payload: RegisterPayload, request: Request, response: Response) -> 
     finally:
         connection.close()
     response.set_cookie("tennis_session", token, max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=False, path="/")
-    return {"expiresAt": expires_at, "user": {"id": user_id, "name": payload.name.strip(), "email": payload.email}}
+    result = {"expiresAt": expires_at, "user": {"id": user_id, "name": payload.name.strip(), "email": payload.email, "emailVerified": False}}
+    if verification_code:
+        result["developmentVerificationCode"] = verification_code
+    return result
 
 
 @app.post("/api/auth/login", tags=["Conta"])
@@ -340,7 +369,56 @@ def current_user(response: Response, authorization: Optional[str] = Header(defau
     user = _authenticated_user(authorization, tennis_session)
     if not tennis_session and authorization and authorization.startswith("Bearer "):
         response.set_cookie("tennis_session", authorization.removeprefix("Bearer ").strip(), max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=False, path="/")
-    return {"user": {"id": user["user_id"], "name": user["name"], "email": user["email"], "createdAt": user["created_at"]}}
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    try:
+        verified_at = connection.execute("SELECT email_verified_at FROM users WHERE user_id = ?", (user["user_id"],)).fetchone()[0]
+    finally:
+        connection.close()
+    return {"user": {"id": user["user_id"], "name": user["name"], "email": user["email"], "createdAt": user["created_at"], "emailVerified": bool(verified_at)}}
+
+
+@app.post("/api/account/email-verification/request", tags=["Conta"])
+def request_email_verification(authorization: Optional[str] = Header(default=None), tennis_session: Optional[str] = Cookie(default=None)) -> dict:
+    user = _authenticated_user(authorization, tennis_session)
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        account = connection.execute("SELECT email_verified_at FROM users WHERE user_id = ?", (user["user_id"],)).fetchone()
+        if account and account["email_verified_at"]:
+            return {"verified": True, "message": "E-mail já confirmado."}
+        previous = connection.execute("SELECT created_at FROM email_verification_tokens WHERE user_id = ?", (user["user_id"],)).fetchone()
+        if previous and datetime.fromisoformat(previous["created_at"]) > datetime.now(timezone.utc) - timedelta(minutes=1):
+            raise HTTPException(status_code=429, detail="Aguarde um minuto antes de solicitar outro código.")
+        code = _create_email_verification(connection, user["user_id"])
+        connection.commit()
+    finally:
+        connection.close()
+    result = {"verified": False, "message": "Código de confirmação gerado. Ele expira em 15 minutos."}
+    if code:
+        result["developmentCode"] = code
+    return result
+
+
+@app.post("/api/account/email-verification/confirm", tags=["Conta"])
+def confirm_email_verification(payload: EmailVerificationPayload, authorization: Optional[str] = Header(default=None), tennis_session: Optional[str] = Cookie(default=None)) -> dict:
+    user = _authenticated_user(authorization, tennis_session)
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        token = connection.execute("SELECT code_hash, expires_at, attempts FROM email_verification_tokens WHERE user_id = ?", (user["user_id"],)).fetchone()
+        now = datetime.now(timezone.utc)
+        if not token or token["expires_at"] <= now.isoformat() or token["attempts"] >= 5:
+            raise HTTPException(status_code=400, detail="Código inválido ou expirado.")
+        if not hmac.compare_digest(token["code_hash"], _token_hash(payload.code)):
+            connection.execute("UPDATE email_verification_tokens SET attempts = attempts + 1 WHERE user_id = ?", (user["user_id"],))
+            connection.commit()
+            raise HTTPException(status_code=400, detail="Código incorreto.")
+        connection.execute("UPDATE users SET email_verified_at = ? WHERE user_id = ?", (now.isoformat(), user["user_id"]))
+        connection.execute("DELETE FROM email_verification_tokens WHERE user_id = ?", (user["user_id"],))
+        connection.commit()
+    finally:
+        connection.close()
+    return {"verified": True, "message": "E-mail confirmado com sucesso."}
 
 
 @app.post("/api/auth/logout", tags=["Conta"], status_code=204)

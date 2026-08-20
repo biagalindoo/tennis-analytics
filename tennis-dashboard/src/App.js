@@ -156,6 +156,7 @@ function App() {
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountMessage, setAccountMessage] = useState("");
   const [accountSessions, setAccountSessions] = useState(null);
+  const [emailVerificationCode, setEmailVerificationCode] = useState("");
   const previousMatchStates = useRef(new Map());
   const deliveredAlertIds = useRef(new Set(alerts.map((alert) => alert.id)));
   const [comparePlayerIds, setComparePlayerIds] = useState(["", ""]);
@@ -550,6 +551,11 @@ function App() {
       setAuthToken("cookie");
       setCurrentUser(data.user);
       setAuthOpen(false);
+      if (authMode === "register" && data.developmentVerificationCode) {
+        setEmailVerificationCode(data.developmentVerificationCode);
+        setAccountMessage("Código local gerado. Confirme seu e-mail abaixo.");
+        setAccountOpen(true);
+      }
     } catch (authRequestError) {
       setAuthError(authRequestError.message);
     } finally {
@@ -612,6 +618,28 @@ function App() {
     const data = response.ok ? await response.json() : { revoked: 0 };
     setAccountSessions((current) => current ? { ...current, count: current.sessions.filter((session) => session.current).length, sessions: current.sessions.filter((session) => session.current) } : current);
     setAccountMessage(data.revoked ? `${data.revoked} outra(s) sessão(ões) encerrada(s).` : "Nenhuma outra sessão estava conectada.");
+  };
+  const requestEmailVerification = async () => {
+    setAccountMessage("");
+    const response = await fetch("/api/account/email-verification/request", { method: "POST", headers: sessionHeaders, credentials: "same-origin" });
+    const data = await response.json();
+    if (!response.ok) {
+      setAccountMessage(data.detail || "Não foi possível gerar o código.");
+      return;
+    }
+    if (data.developmentCode) setEmailVerificationCode(data.developmentCode);
+    setAccountMessage(data.message);
+  };
+  const confirmEmailVerification = async () => {
+    const response = await fetch("/api/account/email-verification/confirm", { method: "POST", headers: { ...sessionHeaders, "Content-Type": "application/json" }, credentials: "same-origin", body: JSON.stringify({ code: emailVerificationCode }) });
+    const data = await response.json();
+    if (!response.ok) {
+      setAccountMessage(data.detail || "Código inválido.");
+      return;
+    }
+    setCurrentUser((user) => ({ ...user, emailVerified: true }));
+    setEmailVerificationCode("");
+    setAccountMessage(data.message);
   };
   const liveCount = (events?.matches || []).filter(
     (match) => match.tour === tour && match.state === "in"
@@ -678,7 +706,8 @@ function App() {
         <div className="modal-backdrop auth-backdrop" role="presentation" onMouseDown={() => setAccountOpen(false)}>
           <section className="auth-modal account-modal" role="dialog" aria-modal="true" aria-labelledby="account-title" onMouseDown={(event) => event.stopPropagation()}>
             <div className="modal-header"><div><p className="eyebrow">Perfil e segurança</p><h2 id="account-title">Minha conta</h2></div><button className="close-button" type="button" onClick={() => setAccountOpen(false)} aria-label="Fechar minha conta">×</button></div>
-            <p className="account-email">{currentUser.email}</p>
+            <p className="account-email">{currentUser.email} <span className={currentUser.emailVerified ? "email-status verified" : "email-status pending"}>{currentUser.emailVerified ? "✓ Verificado" : "Não verificado"}</span></p>
+            {!currentUser.emailVerified && <div className="email-verification"><div><strong>Confirme seu e-mail</strong><small>O código tem 6 dígitos e expira em 15 minutos.</small></div>{emailVerificationCode ? <div className="verification-code-row"><input aria-label="Código de confirmação" inputMode="numeric" maxLength="6" value={emailVerificationCode} onChange={(event) => setEmailVerificationCode(event.target.value.replace(/\D/g, ""))} /><button type="button" disabled={emailVerificationCode.length !== 6} onClick={confirmEmailVerification}>Confirmar</button></div> : <button type="button" onClick={requestEmailVerification}>Gerar código</button>}</div>}
             <div className="account-summary">
               <div><strong>{favoritePlayerIds.length}</strong><span>Jogadores favoritos</span></div>
               <div><strong>{favoriteMatchIds.length}</strong><span>Partidas favoritas</span></div>

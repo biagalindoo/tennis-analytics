@@ -73,6 +73,16 @@
 .auth-error { margin: 0; padding: 10px 12px; border-radius: 10px; background: rgba(197, 69, 69, 0.17); color: #ffb3b3; font-size: 13px; }
 .auth-switch { width: 100%; margin-top: 16px; border: 0; background: transparent; color: var(--accent); cursor: pointer; font-weight: 700; }
 .account-email { margin: 4px 0 18px; color: var(--muted); }
+.email-status { margin-left: 6px; padding: 3px 7px; border-radius: 999px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
+.email-status.verified { background: rgba(143, 191, 115, 0.15); color: var(--accent); }
+.email-status.pending { background: rgba(228, 189, 54, 0.14); color: #e4bd36; }
+.email-verification { display: grid; gap: 10px; margin: -6px 0 20px; padding: 14px; border: 1px solid rgba(228, 189, 54, 0.3); border-radius: 12px; background: rgba(228, 189, 54, 0.06); }
+.email-verification > div:first-child { display: flex; flex-direction: column; gap: 3px; }
+.email-verification small { color: var(--muted); }
+.email-verification > button, .verification-code-row button { border: 0; border-radius: 9px; background: var(--accent); color: #10210c; padding: 9px 12px; cursor: pointer; font-weight: 800; }
+.verification-code-row { display: flex; gap: 8px; }
+.verification-code-row input { min-width: 0; flex: 1; border: 1px solid var(--line); border-radius: 9px; background: #102b17; color: var(--text); padding: 9px 12px; font: inherit; letter-spacing: 0.2em; }
+.verification-code-row button:disabled { opacity: 0.5; }
 .account-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 22px; }
 .account-summary > div { display: flex; min-width: 0; flex-direction: column; gap: 3px; padding: 12px 8px; border-radius: 12px; background: #102b17; text-align: center; }
 .account-summary strong { color: var(--accent); font-size: 19px; }
