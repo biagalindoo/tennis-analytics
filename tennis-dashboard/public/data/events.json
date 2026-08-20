@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T17:02:13.816362+00:00",
+  "generatedAt": "2026-08-20T17:17:25.810498+00:00",
   "source": "ESPN Tennis Scoreboard",
   "refreshSeconds": 60,
   "tournaments": [
@@ -14,7 +14,7 @@
         "WTA"
       ],
       "matchCount": 324,
-      "liveCount": 1
+      "liveCount": 3
     }
   ],
   "matches": [
@@ -41,7 +41,7 @@
           "winner": false,
           "sets": [
             {
-              "value": 2,
+              "value": 5,
               "tiebreak": null,
               "winner": false
             }
@@ -56,7 +56,7 @@
           "winner": false,
           "sets": [
             {
-              "value": 2,
+              "value": 4,
               "tiebreak": null,
               "winner": false
             }
@@ -72,9 +72,9 @@
       "discipline": "Men's Doubles",
       "round": "Round 2",
       "date": "2026-08-20T17:00Z",
-      "state": "pre",
-      "status": "Scheduled",
-      "detail": "Thu, August 20th at 1:00 PM EDT",
+      "state": "in",
+      "status": "In Progress",
+      "detail": "1st Set",
       "venue": "Cincinnati, USA",
       "court": "Tony Trabert Stadium 3",
       "competitors": [
@@ -85,7 +85,13 @@
           "country": "Czechia",
           "flag": "https://a.espncdn.com/i/teamlogos/countries/500/cze.png",
           "winner": false,
-          "sets": []
+          "sets": [
+            {
+              "value": 1,
+              "tiebreak": null,
+              "winner": false
+            }
+          ]
         },
         {
           "id": "279-3548",
@@ -94,7 +100,13 @@
           "country": "Italy",
           "flag": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
           "winner": false,
-          "sets": []
+          "sets": [
+            {
+              "value": 3,
+              "tiebreak": null,
+              "winner": false
+            }
+          ]
         }
       ]
     },
@@ -106,9 +118,9 @@
       "discipline": "Women's Singles",
       "round": "Quarterfinal",
       "date": "2026-08-20T17:05Z",
-      "state": "pre",
-      "status": "Scheduled",
-      "detail": "Thu, August 20th at 1:05 PM EDT",
+      "state": "in",
+      "status": "In Progress",
+      "detail": "1st Set",
       "venue": "Cincinnati, USA",
       "court": "P&G Stadium Court",
       "competitors": [
@@ -119,7 +131,13 @@
           "country": "USA",
           "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
           "winner": false,
-          "sets": []
+          "sets": [
+            {
+              "value": 1,
+              "tiebreak": null,
+              "winner": false
+            }
+          ]
         },
         {
           "id": "3221",
@@ -128,7 +146,13 @@
           "country": "USA",
           "flag": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
           "winner": false,
-          "sets": []
+          "sets": [
+            {
+              "value": 1,
+              "tiebreak": null,
+              "winner": false
+            }
+          ]
         }
       ]
     },

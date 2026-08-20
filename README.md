@@ -59,3 +59,15 @@ uma única vez, execute `python3 etl_update.py`.
 
 A API roda em `http://127.0.0.1:8000`. A documentação interativa fica disponível
 em `http://127.0.0.1:8000/docs`.
+
+## Importar temporadas anteriores
+
+O importador consulta a fonte por mês e salva torneios, partidas e participantes no
+SQLite sem duplicar registros existentes:
+
+```bash
+python3 src/import_history.py --years 2025 2026
+```
+
+O comando pode ser interrompido e executado novamente com segurança. Para adicionar
+outras temporadas, informe os anos desejados após `--years`.

@@ -111,6 +111,21 @@
   padding: 12px 16px;
 }
 
+.archive-controls {
+  display: flex;
+  flex: 1;
+  gap: 10px;
+}
+
+.archive-controls select {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 0 16px;
+  font: inherit;
+}
+
 .banner {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -513,6 +528,30 @@ th {
   margin-right: auto;
 }
 
+.detail-player-link {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-right: auto;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+}
+
+.detail-player-link:hover {
+  color: var(--accent);
+}
+
+.detail-player-link small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
 .detail-player.winner > strong {
   color: var(--accent);
 }
@@ -565,6 +604,12 @@ th {
 
 .match-facts dd {
   margin: 0;
+}
+
+.match-history {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
 }
 
 .player-modal {
@@ -889,6 +934,79 @@ th {
   background: var(--panel);
 }
 
+.archive-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.tournament-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.tournament-card:hover {
+  border-color: #4f7e51;
+  transform: translateY(-2px);
+}
+
+.tournament-year {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tournament-card h3 {
+  margin: 10px 0 8px;
+  font-size: 19px;
+}
+
+.tournament-card p {
+  flex: 1;
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.tournament-card > div {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tournament-card > div strong {
+  color: var(--text);
+}
+
+.tournament-modal {
+  width: min(780px, 100%);
+}
+
+.tournament-summary {
+  color: var(--muted);
+}
+
+.tournament-matches {
+  margin-top: 14px;
+}
+
 @media (max-width: 800px) {
   .hero,
   .podium {
@@ -950,5 +1068,13 @@ th {
   .comparison-row {
     grid-template-columns: 1fr minmax(100px, 1fr) 1fr;
     padding: 12px;
+  }
+
+  .archive-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .archive-controls {
+    width: 100%;
   }
 }

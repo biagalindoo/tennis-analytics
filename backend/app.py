@@ -74,6 +74,114 @@ def ranking_history() -> dict:
     return _read_json("ranking-history.json")
 
 
+@app.get("/api/tournaments", tags=["Torneios"])
+def tournaments(
+    year: Optional[int] = None,
+    tour: Optional[str] = Query(default=None, pattern="^(ATP|WTA)$"),
+    search: Optional[str] = None,
+) -> dict:
+    if not HISTORY_DB_PATH.exists():
+        raise HTTPException(status_code=503, detail="Histórico ainda não foi inicializado.")
+    clauses = []
+    params = []
+    if year:
+        clauses.append("tournament.year = ?")
+        params.append(year)
+    if tour:
+        clauses.append("tournament.tours_json LIKE ?")
+        params.append(f'%"{tour}"%')
+    if search:
+        clauses.append("lower(tournament.name) LIKE lower(?)")
+        params.append(f"%{search}%")
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        rows = connection.execute(
+            f"""
+            SELECT tournament.*,
+                   COUNT(history.match_id) AS match_count,
+                   SUM(CASE WHEN history.state = 'post' THEN 1 ELSE 0 END) AS completed_count
+            FROM tournament_history AS tournament
+            LEFT JOIN match_history AS history ON history.tournament_id = tournament.tournament_id
+            {where}
+            GROUP BY tournament.tournament_id
+            ORDER BY tournament.start_date DESC
+            """,
+            params,
+        ).fetchall()
+    except sqlite3.OperationalError as exc:
+        raise HTTPException(status_code=503, detail="Arquivo de torneios ainda não foi importado.") from exc
+    finally:
+        connection.close()
+    items = [
+        {
+            "id": row["tournament_id"], "name": row["name"], "startDate": row["start_date"],
+            "endDate": row["end_date"], "year": row["year"], "major": bool(row["major"]),
+            "tours": json.loads(row["tours_json"]), "matchCount": row["match_count"],
+            "completedCount": row["completed_count"] or 0,
+        }
+        for row in rows
+    ]
+    return {"count": len(items), "tournaments": items}
+
+
+@app.get("/api/tournaments/{tournament_id}/matches", tags=["Torneios"])
+def tournament_matches(tournament_id: str, tour: Optional[str] = Query(default=None, pattern="^(ATP|WTA)$")) -> dict:
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    try:
+        if tour:
+            rows = connection.execute(
+                "SELECT payload_json FROM match_history WHERE tournament_id = ? AND tour = ? ORDER BY match_date DESC",
+                (tournament_id, tour),
+            ).fetchall()
+        else:
+            rows = connection.execute(
+                "SELECT payload_json FROM match_history WHERE tournament_id = ? ORDER BY match_date DESC",
+                (tournament_id,),
+            ).fetchall()
+    except sqlite3.OperationalError as exc:
+        raise HTTPException(status_code=503, detail="Arquivo de partidas ainda não foi importado.") from exc
+    finally:
+        connection.close()
+    matches = [json.loads(row[0]) for row in rows]
+    if not matches:
+        raise HTTPException(status_code=404, detail="Torneio sem partidas armazenadas.")
+    return {"tournamentId": tournament_id, "count": len(matches), "matches": matches}
+
+
+@app.get("/api/head-to-head", tags=["Jogadores"])
+def head_to_head(tour: str, player1: str, player2: str) -> dict:
+    tour = tour.upper()
+    if tour not in {"ATP", "WTA"}:
+        raise HTTPException(status_code=400, detail="Circuito deve ser ATP ou WTA.")
+    if not HISTORY_DB_PATH.exists():
+        raise HTTPException(status_code=503, detail="Histórico ainda não foi inicializado.")
+
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    try:
+        rows = connection.execute(
+            """
+            SELECT DISTINCT history.payload_json
+            FROM match_history AS history
+            JOIN match_competitors AS first ON first.match_id = history.match_id
+            JOIN match_competitors AS second ON second.match_id = history.match_id
+            WHERE history.tour = ?
+              AND (first.competitor_id = ? OR lower(first.name) = lower(?))
+              AND (second.competitor_id = ? OR lower(second.name) = lower(?))
+              AND first.name <> second.name
+            ORDER BY history.match_date DESC
+            """,
+            (tour, player1, player1, player2, player2),
+        ).fetchall()
+    except sqlite3.OperationalError as exc:
+        raise HTTPException(status_code=503, detail="Histórico de partidas ainda não foi gerado.") from exc
+    finally:
+        connection.close()
+    matches = [json.loads(row[0]) for row in rows]
+    return {"tour": tour, "players": [player1, player2], "count": len(matches), "matches": matches}
+
+
 @app.get("/api/players/{tour}/{athlete_id}/history", tags=["Jogadores"])
 def player_history(tour: str, athlete_id: str) -> dict:
     tour = tour.upper()

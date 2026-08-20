@@ -24,6 +24,14 @@ const events = {
         { id: '2', name: 'Carlos Alcaraz', flag: '', winner: false, sets: [{ value: 4 }, { value: 3 }] },
       ],
     },
+    {
+      id: 'match-0', tournament: 'Cincinnati Open', tour: 'ATP', discipline: "Men's Singles",
+      round: 'Final 2025', state: 'post', detail: 'Final', venue: 'Cincinnati, USA', court: 'Center Court',
+      competitors: [
+        { id: '1', name: 'Jannik Sinner', flag: '', winner: true, sets: [{ value: 7 }, { value: 6 }] },
+        { id: '2', name: 'Carlos Alcaraz', flag: '', winner: false, sets: [{ value: 5 }, { value: 4 }] },
+      ],
+    },
   ],
 };
 
@@ -33,16 +41,24 @@ const rankingHistory = {
   },
 };
 
+const tournamentArchive = {
+  count: 1,
+  tournaments: [{ id: 'archive-1', name: 'Australian Open', startDate: '2026-01-12T00:00Z', endDate: '2026-01-25T00:00Z', year: 2026, major: true, tours: ['ATP', 'WTA'], matchCount: 254 }],
+};
+
 beforeEach(() => {
   window.localStorage.clear();
-  global.fetch = jest.fn((url) =>
-    Promise.resolve({
+  global.fetch = jest.fn((url) => {
+    if (String(url).includes('/api/head-to-head')) return new Promise(() => {});
+    if (String(url).includes('/api/tournaments/archive-1/matches')) return Promise.resolve({ ok: true, json: () => Promise.resolve(events) });
+    if (String(url).includes('/api/tournaments?')) return Promise.resolve({ ok: true, json: () => Promise.resolve(tournamentArchive) });
+    return Promise.resolve({
       ok: true,
       json: () => Promise.resolve(
         String(url).includes('events') ? events : String(url).includes('ranking-history') ? rankingHistory : ranking
       ),
-    })
-  );
+    });
+  });
 });
 
 afterEach(() => {
@@ -101,7 +117,7 @@ test('opens a player profile with ranking, matches and favorite state', async ()
   const profile = screen.getByRole('dialog', { name: 'Jannik Sinner' });
   expect(profile).toBeInTheDocument();
   expect(within(profile).getAllByText('#1')).toHaveLength(2);
-  expect(screen.getByText('vs. Carlos Alcaraz')).toBeInTheDocument();
+  expect(screen.getAllByText('vs. Carlos Alcaraz')).toHaveLength(2);
   expect(screen.getByText(/Primeiro registro salvo/)).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Alternar jogador favorito' }));
@@ -117,6 +133,32 @@ test('compares two ranked players and shows their head-to-head match', async () 
   expect(screen.getByText('Comparação ATP')).toBeInTheDocument();
   expect(screen.getByLabelText('Jogador 1')).toHaveValue('1');
   expect(screen.getByLabelText('Jogador 2')).toHaveValue('2');
-  expect(screen.getByText('Jannik Sinner × Carlos Alcaraz')).toBeInTheDocument();
-  expect(screen.getByText('1 encontrados')).toBeInTheDocument();
+  expect(screen.getAllByText('Jannik Sinner × Carlos Alcaraz')).toHaveLength(2);
+  expect(screen.getByText('2 encontrados')).toBeInTheDocument();
+});
+
+test('opens a player profile from a future match and shows previous head-to-heads', async () => {
+  render(<App />);
+  fireEvent.click(await screen.findByRole('button', { name: /Torneios e partidas/i }));
+  fireEvent.click(await screen.findByText('Cincinnati Open'));
+
+  expect(screen.getByText('1 anteriores')).toBeInTheDocument();
+  expect(screen.getByText('Final 2025', { exact: false })).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: /Jannik Sinner.*Ver perfil/i }));
+  expect(screen.getByRole('dialog', { name: 'Jannik Sinner' })).toBeInTheDocument();
+  expect(screen.getAllByText('vs. Carlos Alcaraz')).toHaveLength(2);
+});
+
+test('lists archived tournaments and opens their stored matches', async () => {
+  render(<App />);
+  await screen.findAllByText('Jannik Sinner');
+  fireEvent.click(screen.getByRole('button', { name: 'Histórico' }));
+
+  expect(await screen.findByText('Australian Open')).toBeInTheDocument();
+  expect(screen.getByText('254 partidas')).toBeInTheDocument();
+  fireEvent.click(screen.getByText('Australian Open'));
+
+  expect(await screen.findByRole('dialog', { name: 'Australian Open' })).toBeInTheDocument();
+  expect(await screen.findByText('2 partidas armazenadas')).toBeInTheDocument();
 });

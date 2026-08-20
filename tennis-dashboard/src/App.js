@@ -116,6 +116,13 @@ function App() {
   const [matchFilter, setMatchFilter] = useState("all");
   const [selectedMatchId, setSelectedMatchId] = useState(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
+  const [selectedPlayerFallback, setSelectedPlayerFallback] = useState(null);
+  const [remoteHeadToHead, setRemoteHeadToHead] = useState(null);
+  const [archiveYear, setArchiveYear] = useState("2026");
+  const [archiveSearch, setArchiveSearch] = useState("");
+  const [tournamentArchive, setTournamentArchive] = useState(null);
+  const [selectedTournament, setSelectedTournament] = useState(null);
+  const [archivedMatches, setArchivedMatches] = useState([]);
   const [comparePlayerIds, setComparePlayerIds] = useState(["", ""]);
   const [favoriteMatchIds, setFavoriteMatchIds] = useState(() => {
     try {
@@ -139,6 +146,19 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (view !== "history") return;
+    const params = new URLSearchParams({ year: archiveYear, tour });
+    if (archiveSearch.trim()) params.set("search", archiveSearch.trim());
+    fetch(`/api/tournaments?${params}`)
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then(setTournamentArchive)
+      .catch(() => {
+        const tournaments = (events?.tournaments || []).filter((item) => item.tours.includes(tour) && (!archiveSearch.trim() || normalizeSearchValue(item.name).includes(normalizeSearchValue(archiveSearch))));
+        setTournamentArchive({ count: tournaments.length, tournaments });
+      });
+  }, [view, archiveYear, archiveSearch, tour, events]);
+
+  useEffect(() => {
     fetchJsonWithFallback("/api/ranking-history", "/data/ranking-history.json")
       .then(setRankingHistory)
       .catch(() => setRankingHistory(null));
@@ -158,6 +178,7 @@ function App() {
       if (event.key !== "Escape") return;
       setSelectedMatchId(null);
       setSelectedPlayerId(null);
+      setSelectedPlayerFallback(null);
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
@@ -198,9 +219,56 @@ function App() {
     if (matchFilter === "favorites") return list.filter((match) => favoriteMatchIds.includes(match.id));
     return list.filter((match) => match.state === matchFilter).slice(0, 40);
   }, [events, tour, matchFilter, favoriteMatchIds]);
-  const selectedMatch = (events?.matches || []).find((match) => match.id === selectedMatchId);
+  const selectedMatch = [...(events?.matches || []), ...archivedMatches].find((match) => match.id === selectedMatchId);
+  useEffect(() => {
+    if (!selectedMatch || selectedMatch.competitors.length < 2) {
+      setRemoteHeadToHead(null);
+      return;
+    }
+    const params = new URLSearchParams({
+      tour: selectedMatch.tour,
+      player1: selectedMatch.competitors[0].id || selectedMatch.competitors[0].name,
+      player2: selectedMatch.competitors[1].id || selectedMatch.competitors[1].name,
+    });
+    fetch(`/api/head-to-head?${params}`)
+      .then((response) => response.ok ? response.json() : null)
+      .then(setRemoteHeadToHead)
+      .catch(() => setRemoteHeadToHead(null));
+  }, [selectedMatch]);
   const allPlayers = Object.values(payload?.tours || {}).flatMap((item) => item.players || []);
-  const selectedPlayer = allPlayers.find((player) => player.athleteId === selectedPlayerId);
+  const selectedPlayer = allPlayers.find((player) => player.athleteId === selectedPlayerId) || selectedPlayerFallback;
+  const openPlayerProfile = (competitor) => {
+    const competitorName = normalizeSearchValue(competitor.name);
+    const rankedPlayer = allPlayers.find(
+      (player) => player.athleteId === competitor.id || competitorName.includes(normalizeSearchValue(player.player))
+    );
+    setSelectedPlayerId(rankedPlayer?.athleteId || competitor.id || competitor.name);
+    setSelectedPlayerFallback(rankedPlayer ? null : {
+      athleteId: competitor.id || competitor.name,
+      player: competitor.name,
+      country: competitor.country || "",
+      countryCode: "",
+      flag: competitor.flag || "",
+      headshot: "",
+      rank: null,
+      points: null,
+      trend: "—",
+      age: null,
+    });
+    setSelectedMatchId(null);
+  };
+  const selectedMatchHistory = selectedMatch
+    ? (events?.matches || []).filter((match) =>
+        match.id !== selectedMatch.id && selectedMatch.competitors.every((target) =>
+          match.competitors.some((candidate) =>
+            candidate.id === target.id || normalizeSearchValue(candidate.name) === normalizeSearchValue(target.name)
+          )
+        )
+      )
+    : [];
+  const persistentMatchHistory = selectedMatch
+    ? (remoteHeadToHead?.matches || selectedMatchHistory).filter((match) => match.id !== selectedMatch.id)
+    : [];
   const selectedPlayerMatches = useMemo(() => {
     if (!selectedPlayer) return [];
     const playerName = normalizeSearchValue(selectedPlayer.player);
@@ -232,6 +300,13 @@ function App() {
       current.includes(playerId) ? current.filter((id) => id !== playerId) : [...current, playerId]
     );
   };
+  const openArchivedTournament = (tournament) => {
+    setSelectedTournament(tournament);
+    fetch(`/api/tournaments/${encodeURIComponent(tournament.id)}/matches?tour=${tour}`)
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then((data) => setArchivedMatches(data.matches || []))
+      .catch(() => setArchivedMatches((events?.matches || []).filter((match) => match.tournamentId === tournament.id && match.tour === tour)));
+  };
   const liveCount = (events?.matches || []).filter(
     (match) => match.tour === tour && match.state === "in"
   ).length;
@@ -241,7 +316,7 @@ function App() {
       <header className="hero">
         <div>
           <p className="eyebrow">Tennis Analytics</p>
-          <h1>{view === "ranking" ? "Ranking mundial" : view === "matches" ? "Torneios e partidas" : "Comparar jogadores"}</h1>
+          <h1>{view === "ranking" ? "Ranking mundial" : view === "matches" ? "Torneios e partidas" : view === "history" ? "Histórico de torneios" : "Comparar jogadores"}</h1>
           <p className="lede">
             ATP e WTA atualizados a partir da fonte oficial via ESPN.
           </p>
@@ -258,6 +333,7 @@ function App() {
           Torneios e partidas {liveCount > 0 && <span className="live-pill">{liveCount} ao vivo</span>}
         </button>
         <button className={view === "compare" ? "active" : ""} onClick={() => setView("compare")}>Comparar</button>
+        <button className={view === "history" ? "active" : ""} onClick={() => setView("history")}>Histórico</button>
       </nav>
 
       <section className="toolbar">
@@ -283,6 +359,14 @@ function App() {
             onChange={(event) => setQuery(event.target.value)}
             aria-label="Buscar jogador ou país"
           />
+        )}
+        {view === "history" && (
+          <div className="archive-controls">
+            <select aria-label="Ano do histórico" value={archiveYear} onChange={(event) => setArchiveYear(event.target.value)}>
+              {[2026, 2025, 2024, 2023].map((year) => <option value={year} key={year}>{year}</option>)}
+            </select>
+            <input type="search" placeholder="Buscar torneio" aria-label="Buscar torneio" value={archiveSearch} onChange={(event) => setArchiveSearch(event.target.value)} />
+          </div>
         )}
       </section>
 
@@ -460,6 +544,27 @@ function App() {
         </section>
       )}
 
+      {view === "history" && (
+        <section className="archive-view">
+          <div className="section-heading">
+            <div><p className="eyebrow">Temporada {archiveYear}</p><h2>Torneios {tour}</h2></div>
+            <span className="events-updated">{tournamentArchive?.count ?? 0} encontrados</span>
+          </div>
+          {!tournamentArchive && <div className="banner">Carregando histórico...</div>}
+          {tournamentArchive?.count === 0 && <div className="banner">Nenhum torneio armazenado para estes filtros.</div>}
+          <div className="archive-grid">
+            {(tournamentArchive?.tournaments || []).map((tournament) => (
+              <button className="tournament-card" key={tournament.id} onClick={() => openArchivedTournament(tournament)}>
+                <span className="tournament-year">{tournament.major ? "Grand Slam" : tournament.tours?.join(" · ")}</span>
+                <h3>{tournament.name}</h3>
+                <p>{formatMatchDate(tournament.startDate)} — {tournament.endDate ? new Date(tournament.endDate).toLocaleDateString("pt-BR") : "—"}</p>
+                <div><span>{tournament.matchCount || 0} partidas</span><strong>Ver torneio →</strong></div>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
       {selectedMatch && (
         <div className="modal-backdrop" role="presentation" onMouseDown={() => setSelectedMatchId(null)}>
           <section className="match-modal" role="dialog" aria-modal="true" aria-labelledby="match-title" onMouseDown={(event) => event.stopPropagation()}>
@@ -480,7 +585,7 @@ function App() {
               {selectedMatch.competitors.map((player) => (
                 <div className={player.winner ? "detail-player winner" : "detail-player"} key={player.id || player.name}>
                   {player.flag && <img src={player.flag} alt="" />}
-                  <strong>{player.name}</strong>
+                  <button className="detail-player-link" type="button" onClick={() => openPlayerProfile(player)}>{player.name}<small>Ver perfil</small></button>
                   <div className="set-scores" aria-label={`Placar de ${player.name}`}>
                     {player.sets.length > 0 ? player.sets.map((set, index) => <span className={set.winner ? "won" : ""} key={index}>{set.value}{set.tiebreak != null && <sup>{set.tiebreak}</sup>}</span>) : <span>—</span>}
                   </div>
@@ -493,12 +598,21 @@ function App() {
               <div><dt>Local</dt><dd>{selectedMatch.venue || "—"}</dd></div>
               <div><dt>Quadra</dt><dd>{selectedMatch.court || "A definir"}</dd></div>
             </dl>
+            <div className="match-history">
+              <div className="profile-section-title"><h3>Histórico do confronto</h3><span>{persistentMatchHistory.length} anteriores</span></div>
+              {persistentMatchHistory.length === 0 ? <p className="empty profile-empty">Nenhum confronto anterior encontrado nos dados armazenados.</p> : persistentMatchHistory.slice(0, 8).map((match) => (
+                <button className="profile-match" key={match.id} onClick={() => setSelectedMatchId(match.id)}>
+                  <span><small>{match.tournament} · {match.round}</small><strong>{match.competitors.map((item) => item.name).join(" × ")}</strong></span>
+                  <span className="profile-result">{match.state === "post" ? "FINAL" : match.state === "in" ? "AO VIVO" : formatMatchDate(match.date)}</span>
+                </button>
+              ))}
+            </div>
           </section>
         </div>
       )}
 
       {selectedPlayer && (
-        <div className="modal-backdrop" role="presentation" onMouseDown={() => setSelectedPlayerId(null)}>
+        <div className="modal-backdrop" role="presentation" onMouseDown={() => { setSelectedPlayerId(null); setSelectedPlayerFallback(null); }}>
           <section className="match-modal player-modal" role="dialog" aria-modal="true" aria-labelledby="player-title" onMouseDown={(event) => event.stopPropagation()}>
             <div className="modal-header player-profile-header">
               <div className="profile-identity">
@@ -511,13 +625,13 @@ function App() {
               </div>
               <div className="modal-actions">
                 <button className={favoritePlayerIds.includes(selectedPlayer.athleteId) ? "favorite-button active" : "favorite-button"} onClick={() => toggleFavoritePlayer(selectedPlayer.athleteId)} aria-label="Alternar jogador favorito">{favoritePlayerIds.includes(selectedPlayer.athleteId) ? "★" : "☆"}</button>
-                <button className="close-button" onClick={() => setSelectedPlayerId(null)} aria-label="Fechar perfil">×</button>
+                <button className="close-button" onClick={() => { setSelectedPlayerId(null); setSelectedPlayerFallback(null); }} aria-label="Fechar perfil">×</button>
               </div>
             </div>
 
             <div className="profile-stats">
-              <div><span>Ranking</span><strong>#{selectedPlayer.rank}</strong></div>
-              <div><span>Pontos</span><strong>{formatPoints(selectedPlayer.points)}</strong></div>
+              <div><span>Ranking</span><strong>{selectedPlayer.rank ? `#${selectedPlayer.rank}` : "—"}</strong></div>
+              <div><span>Pontos</span><strong>{selectedPlayer.points != null ? formatPoints(selectedPlayer.points) : "—"}</strong></div>
               <div><span>Variação</span><strong className={trendClass(selectedPlayer.trend)}>{selectedPlayer.trend}</strong></div>
               <div><span>Idade</span><strong>{selectedPlayer.age ?? "—"}</strong></div>
             </div>
@@ -537,12 +651,29 @@ function App() {
                 const opponent = match.competitors.find((competitor) => !normalizeSearchValue(competitor.name).includes(normalizeSearchValue(selectedPlayer.player)));
                 const playerRow = match.competitors.find((competitor) => normalizeSearchValue(competitor.name).includes(normalizeSearchValue(selectedPlayer.player)));
                 return (
-                  <button className="profile-match" key={match.id} onClick={() => { setSelectedPlayerId(null); setSelectedMatchId(match.id); }}>
+                  <button className="profile-match" key={match.id} onClick={() => { setSelectedPlayerId(null); setSelectedPlayerFallback(null); setSelectedMatchId(match.id); }}>
                     <span><small>{match.tournament} · {match.round}</small><strong>vs. {opponent?.name || "Adversário a definir"}</strong></span>
                     <span className={playerRow?.winner ? "profile-result win" : match.state === "post" ? "profile-result loss" : "profile-result"}>{match.state === "in" ? "AO VIVO" : match.state === "pre" ? formatMatchDate(match.date) : playerRow?.winner ? "VITÓRIA" : "DERROTA"}</span>
                   </button>
                 );
               })}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {selectedTournament && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={() => setSelectedTournament(null)}>
+          <section className="match-modal tournament-modal" role="dialog" aria-modal="true" aria-labelledby="tournament-title" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="modal-header"><div><p className="eyebrow">{archiveYear} · {tour}</p><h2 id="tournament-title">{selectedTournament.name}</h2></div><button className="close-button" onClick={() => setSelectedTournament(null)} aria-label="Fechar torneio">×</button></div>
+            <p className="tournament-summary">{archivedMatches.length} partidas armazenadas</p>
+            <div className="tournament-matches">
+              {archivedMatches.slice(0, 80).map((match) => (
+                <button className="profile-match" key={match.id} onClick={() => { setSelectedTournament(null); setSelectedMatchId(match.id); }}>
+                  <span><small>{match.round || match.discipline}</small><strong>{match.competitors.map((item) => item.name).join(" × ")}</strong></span>
+                  <span className="profile-result">{match.state === "post" ? "FINAL" : match.state === "in" ? "AO VIVO" : formatMatchDate(match.date)}</span>
+                </button>
+              ))}
             </div>
           </section>
         </div>
