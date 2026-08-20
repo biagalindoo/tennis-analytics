@@ -77,15 +77,41 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-test('renders ranking heading', async () => {
+test('renders the personalized today page', async () => {
   render(<App />);
-  const heading = screen.getByText(/Ranking mundial/i);
+  const heading = screen.getByText(/Tênis hoje/i);
   expect(heading).toBeInTheDocument();
-  await screen.findAllByText('Jannik Sinner');
+  await screen.findAllByText(/Jannik Sinner × Carlos Alcaraz/);
+});
+
+test('shows only one relevant match per favorite player on the today page', async () => {
+  window.localStorage.setItem('favoritePlayerIds', JSON.stringify(['1']));
+  render(<App />);
+
+  const label = await screen.findByText('Próximo jogo · até 7 dias');
+  const favoriteBlock = label.closest('.today-block');
+  expect(within(favoriteBlock).getAllByRole('button')).toHaveLength(1);
+  expect(within(favoriteBlock).getByText(/Jannik Sinner × Carlos Alcaraz/)).toBeInTheDocument();
+  expect(within(favoriteBlock).getByText('AO VIVO')).toBeInTheDocument();
+});
+
+test('opens the notification center and clears persisted alerts', async () => {
+  window.localStorage.setItem('tennisAlerts', JSON.stringify([{ id: 'alert-1', matchId: 'match-1', title: 'Sua partida começou', body: 'Jannik Sinner × Carlos Alcaraz', createdAt: '2026-08-20T15:00:00Z', read: false }]));
+  render(<App />);
+  await screen.findAllByText(/Jannik Sinner × Carlos Alcaraz/);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir notificações' }));
+  expect(screen.getByLabelText('Central de notificações')).toBeInTheDocument();
+  expect(screen.getByText('Sua partida começou')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Limpar notificações' }));
+  expect(screen.queryByText('Sua partida começou')).not.toBeInTheDocument();
+  expect(JSON.parse(window.localStorage.getItem('tennisAlerts'))).toEqual([]);
 });
 
 test('filters visible players by name or country without requiring accents', async () => {
   render(<App />);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Ranking' }));
 
   await waitFor(() => expect(screen.getAllByText('Jannik Sinner')).toHaveLength(2));
 
@@ -122,6 +148,7 @@ test('opens match details and saves a favorite', async () => {
 
 test('opens a player profile with ranking, matches and favorite state', async () => {
   render(<App />);
+  fireEvent.click(screen.getByRole('button', { name: 'Ranking' }));
   const playerNames = await screen.findAllByText('Jannik Sinner');
 
   fireEvent.click(playerNames[0]);
@@ -141,7 +168,7 @@ test('opens a player profile with ranking, matches and favorite state', async ()
 
 test('compares two ranked players and shows their head-to-head match', async () => {
   render(<App />);
-  await screen.findAllByText('Jannik Sinner');
+  await screen.findAllByText(/Jannik Sinner × Carlos Alcaraz/);
 
   fireEvent.click(screen.getByRole('button', { name: 'Comparar' }));
 
@@ -167,7 +194,7 @@ test('opens a player profile from a future match and shows previous head-to-head
 
 test('lists archived tournaments and opens their stored matches', async () => {
   render(<App />);
-  await screen.findAllByText('Jannik Sinner');
+  await screen.findAllByText(/Jannik Sinner × Carlos Alcaraz/);
   fireEvent.click(screen.getByRole('button', { name: 'Histórico' }));
 
   expect(await screen.findByText('Australian Open')).toBeInTheDocument();
@@ -179,4 +206,18 @@ test('lists archived tournaments and opens their stored matches', async () => {
 
   expect(await screen.findByRole('dialog', { name: 'Australian Open' })).toBeInTheDocument();
   expect(await screen.findByText('2 partidas armazenadas')).toBeInTheDocument();
+});
+
+test('filters the tournament calendar by month, surface and category', async () => {
+  render(<App />);
+  fireEvent.click(screen.getByRole('button', { name: 'Calendário' }));
+
+  expect(await screen.findByText('Australian Open')).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Mês do calendário'), { target: { value: '1' } });
+  fireEvent.change(screen.getByLabelText('Superfície'), { target: { value: 'Hard' } });
+  fireEvent.change(screen.getByLabelText('Categoria'), { target: { value: 'Grand Slam' } });
+
+  await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('month=1')));
+  expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('surface=Hard'));
+  expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('category=Grand+Slam'));
 });

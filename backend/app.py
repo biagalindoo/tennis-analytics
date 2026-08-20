@@ -79,6 +79,9 @@ def tournaments(
     year: Optional[int] = None,
     tour: Optional[str] = Query(default=None, pattern="^(ATP|WTA)$"),
     search: Optional[str] = None,
+    month: Optional[int] = Query(default=None, ge=1, le=12),
+    surface: Optional[str] = None,
+    category: Optional[str] = None,
 ) -> dict:
     if not HISTORY_DB_PATH.exists():
         raise HTTPException(status_code=503, detail="Histórico ainda não foi inicializado.")
@@ -93,6 +96,20 @@ def tournaments(
     if search:
         clauses.append("lower(tournament.name) LIKE lower(?)")
         params.append(f"%{search}%")
+    if month:
+        calendar_year = year or 2026
+        next_year = calendar_year + 1 if month == 12 else calendar_year
+        next_month = 1 if month == 12 else month + 1
+        month_start = f"{calendar_year}-{month:02d}-01"
+        next_month_start = f"{next_year}-{next_month:02d}-01"
+        clauses.append("date(tournament.end_date) >= date(?) AND date(tournament.start_date) < date(?)")
+        params.extend([month_start, next_month_start])
+    if surface:
+        clauses.append("tournament.surface = ?")
+        params.append(surface)
+    if category and tour:
+        clauses.append("json_extract(tournament.categories_json, ?) = ?")
+        params.extend([f"$.{tour}", category])
     where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
     connection = sqlite3.connect(HISTORY_DB_PATH)
     connection.row_factory = sqlite3.Row

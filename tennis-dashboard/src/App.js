@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 
 function formatPoints(value) {
@@ -110,7 +110,7 @@ function App() {
   const [error, setError] = useState("");
   const [tour, setTour] = useState("ATP");
   const [query, setQuery] = useState("");
-  const [view, setView] = useState("ranking");
+  const [view, setView] = useState("today");
   const [events, setEvents] = useState(null);
   const [rankingHistory, setRankingHistory] = useState(null);
   const [matchFilter, setMatchFilter] = useState("all");
@@ -125,6 +125,20 @@ function App() {
   const [archivedMatches, setArchivedMatches] = useState([]);
   const [remotePlayerMatches, setRemotePlayerMatches] = useState(null);
   const [remotePlayerStats, setRemotePlayerStats] = useState(null);
+  const [calendarMonth, setCalendarMonth] = useState(String(new Date().getMonth() + 1));
+  const [calendarSurface, setCalendarSurface] = useState("");
+  const [calendarCategory, setCalendarCategory] = useState("");
+  const [calendarData, setCalendarData] = useState(null);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [browserNotifications, setBrowserNotifications] = useState(() => window.localStorage.getItem("browserNotifications") === "true");
+  const [alerts, setAlerts] = useState(() => {
+    try {
+      return JSON.parse(window.localStorage.getItem("tennisAlerts")) || [];
+    } catch {
+      return [];
+    }
+  });
+  const previousMatchStates = useRef(new Map());
   const [comparePlayerIds, setComparePlayerIds] = useState(["", ""]);
   const [favoriteMatchIds, setFavoriteMatchIds] = useState(() => {
     try {
@@ -161,6 +175,17 @@ function App() {
   }, [view, archiveYear, archiveSearch, tour, events]);
 
   useEffect(() => {
+    if (view !== "calendar") return;
+    const params = new URLSearchParams({ year: "2026", month: calendarMonth, tour });
+    if (calendarSurface) params.set("surface", calendarSurface);
+    if (calendarCategory) params.set("category", calendarCategory);
+    fetch(`/api/tournaments?${params}`)
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then(setCalendarData)
+      .catch(() => setCalendarData({ count: 0, tournaments: [] }));
+  }, [view, calendarMonth, calendarSurface, calendarCategory, tour]);
+
+  useEffect(() => {
     fetchJsonWithFallback("/api/ranking-history", "/data/ranking-history.json")
       .then(setRankingHistory)
       .catch(() => setRankingHistory(null));
@@ -173,6 +198,34 @@ function App() {
   useEffect(() => {
     window.localStorage.setItem("favoritePlayerIds", JSON.stringify(favoritePlayerIds));
   }, [favoritePlayerIds]);
+
+  useEffect(() => {
+    window.localStorage.setItem("tennisAlerts", JSON.stringify(alerts));
+  }, [alerts]);
+
+  useEffect(() => {
+    if (!events?.matches) return;
+    const nextStates = new Map(events.matches.map((match) => [match.id, match.state]));
+    if (previousMatchStates.current.size > 0) {
+      const newAlerts = [];
+      for (const match of events.matches) {
+        const previousState = previousMatchStates.current.get(match.id);
+        const isFavorite = favoriteMatchIds.includes(match.id) || match.competitors.some((competitor) => favoritePlayerIds.includes(competitor.id));
+        if (!isFavorite || !previousState || previousState === match.state) continue;
+        let title = "Partida atualizada";
+        if (match.state === "in") title = "Sua partida começou";
+        if (match.state === "post") title = "Sua partida terminou";
+        const body = match.competitors.map((competitor) => competitor.name).join(" × ");
+        const alert = { id: `${match.id}-${match.state}-${Date.now()}`, matchId: match.id, title, body, createdAt: new Date().toISOString(), read: false };
+        newAlerts.push(alert);
+        if (browserNotifications && typeof Notification !== "undefined" && Notification.permission === "granted") {
+          new Notification(title, { body, tag: `tennis-${match.id}` });
+        }
+      }
+      if (newAlerts.length) setAlerts((current) => [...newAlerts, ...current].slice(0, 30));
+    }
+    previousMatchStates.current = nextStates;
+  }, [events, favoriteMatchIds, favoritePlayerIds, browserNotifications]);
 
   useEffect(() => {
     if (!selectedMatchId && !selectedPlayerId) return undefined;
@@ -328,16 +381,43 @@ function App() {
       .then((data) => setArchivedMatches(data.matches || []))
       .catch(() => setArchivedMatches((events?.matches || []).filter((match) => match.tournamentId === tournament.id && match.tour === tour)));
   };
+  const requestBrowserNotifications = async () => {
+    if (typeof Notification === "undefined") return;
+    const permission = await Notification.requestPermission();
+    const enabled = permission === "granted";
+    setBrowserNotifications(enabled);
+    window.localStorage.setItem("browserNotifications", String(enabled));
+  };
+  const toggleNotifications = () => {
+    const opening = !notificationsOpen;
+    setNotificationsOpen(opening);
+    if (opening) setAlerts((current) => current.map((alert) => ({ ...alert, read: true })));
+  };
   const liveCount = (events?.matches || []).filter(
     (match) => match.tour === tour && match.state === "in"
   ).length;
+  const todayTourMatches = (events?.matches || []).filter((match) => match.tour === tour);
+  const todayLive = todayTourMatches.filter((match) => match.state === "in");
+  const todayUpcoming = todayTourMatches.filter((match) => match.state === "pre").slice(0, 6);
+  const todayRecent = todayTourMatches.filter((match) => match.state === "post").slice(0, 6);
+  const now = Date.now();
+  const sevenDaysFromNow = now + 7 * 24 * 60 * 60 * 1000;
+  const relevantFavoriteMatches = todayTourMatches
+    .filter((match) => match.state === "in" || (match.state === "pre" && new Date(match.date).getTime() >= now && new Date(match.date).getTime() <= sevenDaysFromNow))
+    .sort((left, right) => left.state === "in" ? -1 : right.state === "in" ? 1 : new Date(left.date) - new Date(right.date));
+  const favoritePlayerMatches = favoritePlayerIds
+    .map((playerId) => relevantFavoriteMatches.find((match) => match.competitors.some((competitor) => competitor.id === playerId)))
+    .filter(Boolean);
+  const explicitlyFavoriteMatches = relevantFavoriteMatches.filter((match) => favoriteMatchIds.includes(match.id));
+  const favoriteTodayMatches = [...new Map([...favoritePlayerMatches, ...explicitlyFavoriteMatches].map((match) => [match.id, match])).values()];
+  const unreadAlerts = alerts.filter((alert) => !alert.read).length;
 
   return (
     <div className="app">
       <header className="hero">
         <div>
           <p className="eyebrow">Tennis Analytics</p>
-          <h1>{view === "ranking" ? "Ranking mundial" : view === "matches" ? "Torneios e partidas" : view === "history" ? "Histórico de torneios" : "Comparar jogadores"}</h1>
+          <h1>{view === "today" ? "Tênis hoje" : view === "ranking" ? "Ranking mundial" : view === "matches" ? "Torneios e partidas" : view === "history" ? "Histórico de torneios" : view === "calendar" ? "Calendário" : "Comparar jogadores"}</h1>
           <p className="lede">
             ATP e WTA atualizados a partir da fonte oficial via ESPN.
           </p>
@@ -345,16 +425,27 @@ function App() {
         <div className="meta">
           <span>{tourData?.week || "Temporada 2026"}</span>
           <span>Atualizado em {formatUpdated(tourData?.lastUpdated || payload?.generatedAt)}</span>
+          <button className="notification-button" type="button" aria-label="Abrir notificações" onClick={toggleNotifications}>🔔{unreadAlerts > 0 && <b>{unreadAlerts}</b>}</button>
         </div>
       </header>
 
+      {notificationsOpen && (
+        <aside className="notification-panel" aria-label="Central de notificações">
+          <div className="notification-header"><div><h2>Notificações</h2><span>{browserNotifications ? "Alertas do navegador ativos" : "Alertas somente dentro do site"}</span></div><button onClick={requestBrowserNotifications} disabled={browserNotifications}>{browserNotifications ? "Ativadas" : "Ativar no navegador"}</button></div>
+          {alerts.length === 0 ? <p className="empty profile-empty">As mudanças das partidas favoritas aparecerão aqui.</p> : <div className="notification-list">{alerts.map((alert) => <button key={alert.id} onClick={() => { setNotificationsOpen(false); setSelectedMatchId(alert.matchId); }}><strong>{alert.title}</strong><span>{alert.body}</span><small>{formatUpdated(alert.createdAt)}</small></button>)}</div>}
+          {alerts.length > 0 && <button className="clear-alerts" onClick={() => setAlerts([])}>Limpar notificações</button>}
+        </aside>
+      )}
+
       <nav className="view-tabs" aria-label="Seções">
+        <button className={view === "today" ? "active" : ""} onClick={() => setView("today")}>Hoje</button>
         <button className={view === "ranking" ? "active" : ""} onClick={() => setView("ranking")}>Ranking</button>
         <button className={view === "matches" ? "active" : ""} onClick={() => setView("matches")}>
           Torneios e partidas {liveCount > 0 && <span className="live-pill">{liveCount} ao vivo</span>}
         </button>
         <button className={view === "compare" ? "active" : ""} onClick={() => setView("compare")}>Comparar</button>
         <button className={view === "history" ? "active" : ""} onClick={() => setView("history")}>Histórico</button>
+        <button className={view === "calendar" ? "active" : ""} onClick={() => setView("calendar")}>Calendário</button>
       </nav>
 
       <section className="toolbar">
@@ -389,10 +480,41 @@ function App() {
             <input type="search" placeholder="Buscar torneio" aria-label="Buscar torneio" value={archiveSearch} onChange={(event) => setArchiveSearch(event.target.value)} />
           </div>
         )}
+        {view === "calendar" && (
+          <div className="calendar-controls">
+            <select aria-label="Mês do calendário" value={calendarMonth} onChange={(event) => setCalendarMonth(event.target.value)}>
+              {["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"].map((month, index) => <option value={index + 1} key={month}>{month}</option>)}
+            </select>
+            <select aria-label="Superfície" value={calendarSurface} onChange={(event) => setCalendarSurface(event.target.value)}><option value="">Todas as superfícies</option>{["Hard", "Clay", "Grass", "Indoor Hard"].map((value) => <option key={value}>{value}</option>)}</select>
+            <select aria-label="Categoria" value={calendarCategory} onChange={(event) => setCalendarCategory(event.target.value)}><option value="">Todas as categorias</option>{["Grand Slam", "1000", "500", "250", "Finals"].map((value) => <option key={value}>{value}</option>)}</select>
+          </div>
+        )}
       </section>
 
       {error && <div className="banner error">{error}</div>}
       {!error && !payload && <div className="banner">Carregando ranking...</div>}
+
+      {view === "today" && (
+        <section className="today-view">
+          <div className="today-summary">
+            <div><span>Ao vivo</span><strong>{todayLive.length}</strong></div>
+            <div><span>Próximas</span><strong>{todayUpcoming.length}</strong></div>
+            <div><span>Favoritos</span><strong>{favoriteTodayMatches.length}</strong></div>
+            <div><span>Torneios ativos</span><strong>{(events?.tournaments || []).filter((item) => item.tours.includes(tour)).length}</strong></div>
+          </div>
+
+          {favoriteTodayMatches.length > 0 && (
+            <div className="today-block favorite-block"><div className="profile-section-title"><h2>Para você</h2><span>Próximo jogo · até 7 dias</span></div><div className="home-match-list">{favoriteTodayMatches.map((match) => <button className="home-match" key={match.id} onClick={() => setSelectedMatchId(match.id)}><span><small>{match.tournament} · {match.round}</small><strong>{match.competitors.map((item) => item.name).join(" × ")}</strong></span><b>{match.state === "in" ? "AO VIVO" : formatMatchDate(match.date)}</b></button>)}</div></div>
+          )}
+
+          <div className="today-columns">
+            <div className="today-block live-block"><div className="profile-section-title"><h2>Ao vivo</h2><span>{todayLive.length} partidas</span></div>{todayLive.length === 0 ? <p className="empty profile-empty">Nenhuma partida ao vivo agora.</p> : <div className="home-match-list">{todayLive.map((match) => <button className="home-match" key={match.id} onClick={() => setSelectedMatchId(match.id)}><span><small>{match.tournament} · {match.detail}</small><strong>{match.competitors.map((item) => item.name).join(" × ")}</strong></span><b>AO VIVO</b></button>)}</div>}</div>
+            <div className="today-block"><div className="profile-section-title"><h2>Próximas</h2><button onClick={() => setView("matches")}>Ver todas</button></div><div className="home-match-list">{todayUpcoming.map((match) => <button className="home-match" key={match.id} onClick={() => setSelectedMatchId(match.id)}><span><small>{match.tournament} · {match.round}</small><strong>{match.competitors.map((item) => item.name).join(" × ")}</strong></span><b>{formatMatchDate(match.date)}</b></button>)}</div></div>
+          </div>
+
+          <div className="today-block"><div className="profile-section-title"><h2>Resultados recentes</h2><span>{tour}</span></div><div className="home-match-list recent-grid">{todayRecent.map((match) => <button className="home-match" key={match.id} onClick={() => setSelectedMatchId(match.id)}><span><small>{match.tournament} · {match.round}</small><strong>{match.competitors.map((item) => item.name).join(" × ")}</strong></span><b>FINAL</b></button>)}</div></div>
+        </section>
+      )}
 
       {view === "ranking" && tourData && (
         <>
@@ -581,6 +703,23 @@ function App() {
                 <p>{formatMatchDate(tournament.startDate)} — {tournament.endDate ? new Date(tournament.endDate).toLocaleDateString("pt-BR") : "—"}</p>
                 {tournament.champion && <p className="tournament-winner"><strong>Campeão:</strong> {tournament.champion}<br /><span>Vice: {tournament.runnerUp || "—"}</span></p>}
                 <div className="tournament-footer"><span>{tournament.matchCount || 0} partidas</span><strong>Ver torneio →</strong></div>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {view === "calendar" && (
+        <section className="calendar-view">
+          <div className="section-heading"><div><p className="eyebrow">Temporada 2026</p><h2>{new Date(2026, Number(calendarMonth) - 1, 1).toLocaleDateString("pt-BR", { month: "long" })}</h2></div><span className="events-updated">{calendarData?.count || 0} torneios</span></div>
+          {!calendarData && <div className="banner">Carregando calendário...</div>}
+          {calendarData?.count === 0 && <div className="banner">Nenhum torneio para estes filtros.</div>}
+          <div className="calendar-list">
+            {(calendarData?.tournaments || []).map((tournament) => (
+              <button className="calendar-event" key={tournament.id} onClick={() => openArchivedTournament(tournament)}>
+                <time><strong>{new Date(tournament.startDate).toLocaleDateString("pt-BR", { day: "2-digit" })}</strong><span>{new Date(tournament.startDate).toLocaleDateString("pt-BR", { month: "short" })}</span></time>
+                <div><span className="calendar-badges"><i>{tournament.category || tour}</i><i>{tournament.surface || "—"}</i></span><h3>{tournament.name}</h3><p>{tournament.champion ? `Último campeão: ${tournament.champion}` : `${tournament.matchCount || 0} partidas armazenadas`}</p></div>
+                <strong>→</strong>
               </button>
             ))}
           </div>
