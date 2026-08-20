@@ -4,15 +4,19 @@ import hmac
 import os
 import secrets
 import sqlite3
+from html import escape
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
+import requests
 from fastapi import Cookie, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
+from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(ROOT / ".env")
 PUBLIC_DATA_DIR = ROOT / "tennis-dashboard" / "public" / "data"
 HISTORY_DB_PATH = ROOT / "data" / "tennis_history.db"
 CAREER_TOTALS_PATH = ROOT / "data" / "career_totals.json"
@@ -185,14 +189,78 @@ def _token_hash(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
-def _create_email_verification(connection: sqlite3.Connection, user_id: str) -> Optional[str]:
+def _is_production() -> bool:
+    return os.getenv("APP_ENV", "development").lower() == "production"
+
+
+def _expose_development_secrets() -> bool:
+    return not _is_production() and not os.getenv("RESEND_API_KEY", "").strip()
+
+
+def _send_email(to: str, subject: str, html: str, text: str, idempotency_key: str) -> bool:
+    api_key = os.getenv("RESEND_API_KEY", "").strip()
+    if not api_key:
+        if _is_production():
+            raise HTTPException(status_code=503, detail="O serviço de e-mail ainda não está configurado.")
+        return False
+    try:
+        response = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "Idempotency-Key": idempotency_key,
+                "User-Agent": "tennis-analytics/1.0",
+            },
+            json={
+                "from": os.getenv("EMAIL_FROM", "Tennis Analytics <onboarding@resend.dev>"),
+                "to": [to],
+                "subject": subject,
+                "html": html,
+                "text": text,
+            },
+            timeout=10,
+        )
+        response.raise_for_status()
+        return True
+    except requests.RequestException as exc:
+        if _is_production():
+            raise HTTPException(status_code=503, detail="Não foi possível enviar o e-mail agora. Tente novamente.") from exc
+        return False
+
+
+def _send_verification_email(email: str, code: str, user_id: str) -> bool:
+    safe_code = escape(code)
+    return _send_email(
+        email,
+        "Confirme seu e-mail no Tennis Analytics",
+        f"<h1>Confirme seu e-mail</h1><p>Seu código é:</p><p style='font-size:28px;font-weight:700;letter-spacing:6px'>{safe_code}</p><p>Ele expira em 15 minutos.</p>",
+        f"Seu código de confirmação é {code}. Ele expira em 15 minutos.",
+        f"verify-{user_id}-{_token_hash(code)[:16]}",
+    )
+
+
+def _send_password_reset_email(email: str, token: str, user_id: str) -> bool:
+    base_url = os.getenv("APP_BASE_URL", "http://localhost:3000").rstrip("/")
+    reset_url = f"{base_url}/?reset_token={token}"
+    safe_url = escape(reset_url, quote=True)
+    return _send_email(
+        email,
+        "Redefina sua senha do Tennis Analytics",
+        f"<h1>Redefinição de senha</h1><p>Use o botão abaixo em até 20 minutos.</p><p><a href='{safe_url}'>Criar nova senha</a></p><p>Se você não pediu isso, ignore este e-mail.</p>",
+        f"Redefina sua senha em até 20 minutos: {reset_url}\nSe você não pediu isso, ignore este e-mail.",
+        f"reset-{user_id}-{_token_hash(token)[:16]}",
+    )
+
+
+def _create_email_verification(connection: sqlite3.Connection, user_id: str) -> str:
     code = f"{secrets.randbelow(1_000_000):06d}"
     now = datetime.now(timezone.utc)
     connection.execute(
         "INSERT INTO email_verification_tokens (user_id, code_hash, expires_at, created_at, attempts) VALUES (?, ?, ?, ?, 0) ON CONFLICT(user_id) DO UPDATE SET code_hash = excluded.code_hash, expires_at = excluded.expires_at, created_at = excluded.created_at, attempts = 0",
         (user_id, _token_hash(code), (now + timedelta(minutes=15)).isoformat(), now.isoformat()),
     )
-    return code if os.getenv("APP_ENV", "development") != "production" else None
+    return code
 
 
 def _new_session(connection: sqlite3.Connection, user_id: str, request: Optional[Request] = None) -> tuple[str, str]:
@@ -274,15 +342,16 @@ def register(payload: RegisterPayload, request: Request, response: Response) -> 
             (user_id, payload.name.strip(), payload.email, _password_hash(payload.password), now),
         )
         verification_code = _create_email_verification(connection, user_id)
+        _send_verification_email(payload.email, verification_code, user_id)
         token, expires_at = _new_session(connection, user_id, request)
         connection.commit()
     except sqlite3.IntegrityError as exc:
         raise HTTPException(status_code=409, detail="Já existe uma conta com este e-mail.") from exc
     finally:
         connection.close()
-    response.set_cookie("tennis_session", token, max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=False, path="/")
+    response.set_cookie("tennis_session", token, max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=_is_production(), path="/")
     result = {"expiresAt": expires_at, "user": {"id": user_id, "name": payload.name.strip(), "email": payload.email, "emailVerified": False}}
-    if verification_code:
+    if _expose_development_secrets():
         result["developmentVerificationCode"] = verification_code
     return result
 
@@ -312,7 +381,7 @@ def login(payload: LoginPayload, request: Request, response: Response) -> dict:
         connection.commit()
     finally:
         connection.close()
-    response.set_cookie("tennis_session", token, max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=False, path="/")
+    response.set_cookie("tennis_session", token, max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=_is_production(), path="/")
     return {"expiresAt": expires_at, "user": {"id": user["user_id"], "name": user["name"], "email": user["email"]}}
 
 
@@ -335,7 +404,8 @@ def forgot_password(payload: ForgotPasswordPayload, request: Request) -> dict:
             token = secrets.token_urlsafe(32)
             connection.execute("DELETE FROM password_reset_tokens WHERE user_id = ?", (user["user_id"],))
             connection.execute("INSERT INTO password_reset_tokens (token_hash, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)", (_token_hash(token), user["user_id"], (now + timedelta(minutes=20)).isoformat(), now.isoformat()))
-            if os.getenv("APP_ENV", "development") != "production":
+            _send_password_reset_email(payload.email, token, user["user_id"])
+            if _expose_development_secrets():
                 dev_token = token
         connection.commit()
     finally:
@@ -368,7 +438,7 @@ def reset_password(payload: ResetPasswordPayload) -> dict:
 def current_user(response: Response, authorization: Optional[str] = Header(default=None), tennis_session: Optional[str] = Cookie(default=None)) -> dict:
     user = _authenticated_user(authorization, tennis_session)
     if not tennis_session and authorization and authorization.startswith("Bearer "):
-        response.set_cookie("tennis_session", authorization.removeprefix("Bearer ").strip(), max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=False, path="/")
+        response.set_cookie("tennis_session", authorization.removeprefix("Bearer ").strip(), max_age=30 * 24 * 60 * 60, httponly=True, samesite="strict", secure=_is_production(), path="/")
     connection = sqlite3.connect(HISTORY_DB_PATH)
     try:
         verified_at = connection.execute("SELECT email_verified_at FROM users WHERE user_id = ?", (user["user_id"],)).fetchone()[0]
@@ -383,18 +453,19 @@ def request_email_verification(authorization: Optional[str] = Header(default=Non
     connection = sqlite3.connect(HISTORY_DB_PATH)
     connection.row_factory = sqlite3.Row
     try:
-        account = connection.execute("SELECT email_verified_at FROM users WHERE user_id = ?", (user["user_id"],)).fetchone()
+        account = connection.execute("SELECT email, email_verified_at FROM users WHERE user_id = ?", (user["user_id"],)).fetchone()
         if account and account["email_verified_at"]:
             return {"verified": True, "message": "E-mail já confirmado."}
         previous = connection.execute("SELECT created_at FROM email_verification_tokens WHERE user_id = ?", (user["user_id"],)).fetchone()
         if previous and datetime.fromisoformat(previous["created_at"]) > datetime.now(timezone.utc) - timedelta(minutes=1):
             raise HTTPException(status_code=429, detail="Aguarde um minuto antes de solicitar outro código.")
         code = _create_email_verification(connection, user["user_id"])
+        _send_verification_email(account["email"], code, user["user_id"])
         connection.commit()
     finally:
         connection.close()
     result = {"verified": False, "message": "Código de confirmação gerado. Ele expira em 15 minutos."}
-    if code:
+    if _expose_development_secrets():
         result["developmentCode"] = code
     return result
 

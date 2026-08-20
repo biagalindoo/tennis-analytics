@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T22:22:59.779180+00:00",
+  "generatedAt": "2026-08-20T22:40:27.531471+00:00",
   "source": "ESPN Tennis Scoreboard",
   "refreshSeconds": 60,
   "tournaments": [
@@ -15,66 +15,10 @@
         "WTA"
       ],
       "matchCount": 324,
-      "liveCount": 1
+      "liveCount": 0
     }
   ],
   "matches": [
-    {
-      "id": "182461",
-      "tournamentId": "718-2026",
-      "tournament": "Cincinnati Open",
-      "tour": "WTA",
-      "discipline": "Women's Doubles",
-      "round": "Quarterfinal",
-      "date": "2026-08-20T20:45Z",
-      "state": "in",
-      "status": "In Progress",
-      "detail": "2nd Set",
-      "venue": "Cincinnati, USA",
-      "court": "Tony Trabert Stadium 3",
-      "competitors": [
-        {
-          "id": "2204-4109",
-          "name": "Erin Routliffe / Aldila Sutjiadi",
-          "shortName": "E. Routliffe / A. Sutjiadi",
-          "country": "New Zealand",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/nzl.png",
-          "winner": false,
-          "sets": [
-            {
-              "value": 5,
-              "tiebreak": null,
-              "winner": false
-            },
-            {
-              "value": 5,
-              "tiebreak": null,
-              "winner": false
-            }
-          ]
-        },
-        {
-          "id": "2392-6970",
-          "name": "Marie Bouzkova / Linda Noskova",
-          "shortName": "M. Bouzkova / L. Noskova",
-          "country": "Czechia",
-          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/cze.png",
-          "winner": false,
-          "sets": [
-            {
-              "value": 7,
-              "tiebreak": null,
-              "winner": true
-            },
-            {
-              "value": 4,
-              "tiebreak": null,
-              "winner": false
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "182381",
       "tournamentId": "718-2026",
@@ -362,11 +306,11 @@
       "court": "Grandstand",
       "competitors": [
         {
-          "id": "-3--4",
-          "name": "TBD / TBD",
-          "shortName": "TBD / TBD",
-          "country": "",
-          "flag": "",
+          "id": "2392-6970",
+          "name": "Marie Bouzkova / Linda Noskova",
+          "shortName": "M. Bouzkova / L. Noskova",
+          "country": "Czechia",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/cze.png",
           "winner": false,
           "sets": []
         },
@@ -18798,6 +18742,62 @@
               "value": 4,
               "tiebreak": null,
               "winner": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "182461",
+      "tournamentId": "718-2026",
+      "tournament": "Cincinnati Open",
+      "tour": "WTA",
+      "discipline": "Women's Doubles",
+      "round": "Quarterfinal",
+      "date": "2026-08-20T20:45Z",
+      "state": "post",
+      "status": "Final",
+      "detail": "Final",
+      "venue": "Cincinnati, USA",
+      "court": "Tony Trabert Stadium 3",
+      "competitors": [
+        {
+          "id": "2204-4109",
+          "name": "Erin Routliffe / Aldila Sutjiadi",
+          "shortName": "E. Routliffe / A. Sutjiadi",
+          "country": "New Zealand",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/nzl.png",
+          "winner": false,
+          "sets": [
+            {
+              "value": 5,
+              "tiebreak": null,
+              "winner": false
+            },
+            {
+              "value": 5,
+              "tiebreak": null,
+              "winner": false
+            }
+          ]
+        },
+        {
+          "id": "2392-6970",
+          "name": "Marie Bouzkova / Linda Noskova",
+          "shortName": "M. Bouzkova / L. Noskova",
+          "country": "Czechia",
+          "flag": "https://a.espncdn.com/i/teamlogos/countries/500/cze.png",
+          "winner": true,
+          "sets": [
+            {
+              "value": 7,
+              "tiebreak": null,
+              "winner": true
+            },
+            {
+              "value": 7,
+              "tiebreak": null,
+              "winner": true
             }
           ]
         }

@@ -80,6 +80,7 @@ const leaders = {
 let accountPreferences;
 
 beforeEach(() => {
+  window.history.replaceState({}, '', '/');
   window.localStorage.clear();
   accountPreferences = { initialized: false, favoritePlayerIds: [], favoriteMatchIds: [], preferredTour: 'ATP' };
   global.fetch = jest.fn((url, options = {}) => {
@@ -213,7 +214,7 @@ test('recovers a password with a short-lived development token', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Esqueci minha senha' }));
 
   fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'bia@example.com' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Gerar código' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Enviar link' }));
   const resetDialog = await screen.findByRole('dialog', { name: 'Nova senha' });
 
   fireEvent.change(within(resetDialog).getByLabelText('Nova senha'), { target: { value: 'nova-senha-segura' } });
@@ -221,6 +222,14 @@ test('recovers a password with a short-lived development token', async () => {
   fireEvent.click(within(resetDialog).getByRole('button', { name: 'Redefinir senha' }));
   expect(await screen.findByText('Senha redefinida. Entre com a nova senha.')).toBeInTheDocument();
   expect(screen.getByRole('dialog', { name: 'Bem-vinda de volta' })).toBeInTheDocument();
+});
+
+test('opens password reset directly from the email link and removes the token from the URL', async () => {
+  window.history.replaceState({}, '', '/?reset_token=email-reset-token-123456789');
+  render(<App />);
+
+  expect(await screen.findByRole('dialog', { name: 'Nova senha' })).toBeInTheDocument();
+  expect(window.location.search).toBe('');
 });
 
 test('restores favorites and tour preference from the signed-in account', async () => {

@@ -177,6 +177,16 @@ function App() {
   const sessionHeaders = useMemo(() => authToken && authToken !== "cookie" ? { Authorization: `Bearer ${authToken}` } : {}, [authToken]);
 
   useEffect(() => {
+    const resetToken = new URLSearchParams(window.location.search).get("reset_token");
+    if (!resetToken) return;
+    setRecoveryToken(resetToken);
+    setAuthMode("reset");
+    setAuthError("");
+    setAuthOpen(true);
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+  }, []);
+
+  useEffect(() => {
     fetchJsonWithFallback("/api/rankings", "/data/rankings.json")
       .then(setPayload)
       .catch((err) => setError(err.message));
@@ -687,14 +697,14 @@ function App() {
               <div><p className="eyebrow">Sua conta</p><h2 id="auth-title">{authMode === "login" ? "Bem-vinda de volta" : authMode === "register" ? "Crie sua conta" : authMode === "forgot" ? "Recuperar senha" : "Nova senha"}</h2></div>
               <button className="close-button" type="button" onClick={() => setAuthOpen(false)} aria-label="Fechar login">×</button>
             </div>
-            <p className="auth-intro">{authMode === "forgot" ? "Informe seu e-mail para gerar um código de recuperação válido por 20 minutos." : authMode === "reset" ? "Código local validado. Escolha uma nova senha para sua conta." : "Entre para sincronizar favoritos e alertas em qualquer dispositivo."}</p>
+            <p className="auth-intro">{authMode === "forgot" ? "Informe seu e-mail. Enviaremos um link de recuperação válido por 20 minutos." : authMode === "reset" ? "Escolha uma nova senha para sua conta." : "Entre para sincronizar favoritos e alertas em qualquer dispositivo."}</p>
             <form className="auth-form" onSubmit={submitAuth}>
               {authMode === "register" && <label><span>Nome</span><input name="name" required minLength="2" autoComplete="name" placeholder="Como podemos chamar você?" /></label>}
               {authMode !== "reset" && <label><span>E-mail</span><input name="email" type="email" required autoComplete="email" placeholder="voce@email.com" /></label>}
               {(authMode === "login" || authMode === "register") && <label><span>Senha</span><input name="password" type="password" required minLength="8" autoComplete={authMode === "login" ? "current-password" : "new-password"} placeholder="Mínimo de 8 caracteres" /></label>}
               {authMode === "reset" && <><label><span>Nova senha</span><input name="newPassword" type="password" required minLength="8" autoComplete="new-password" /></label><label><span>Confirmar nova senha</span><input name="confirmPassword" type="password" required minLength="8" autoComplete="new-password" /></label></>}
               {authError && <p className="auth-error" role="alert">{authError}</p>}
-              <button className="auth-submit" disabled={authLoading}>{authLoading ? "Aguarde..." : authMode === "login" ? "Entrar" : authMode === "register" ? "Criar conta" : authMode === "forgot" ? "Gerar código" : "Redefinir senha"}</button>
+              <button className="auth-submit" disabled={authLoading}>{authLoading ? "Aguarde..." : authMode === "login" ? "Entrar" : authMode === "register" ? "Criar conta" : authMode === "forgot" ? "Enviar link" : "Redefinir senha"}</button>
             </form>
             {authMode === "login" && <button className="auth-switch" type="button" onClick={() => { setAuthMode("forgot"); setAuthError(""); }}>Esqueci minha senha</button>}
             <button className="auth-switch" type="button" onClick={() => { setAuthMode((mode) => mode === "login" ? "register" : "login"); setAuthError(""); setRecoveryToken(""); }}>{authMode === "login" ? "Ainda não tenho conta" : "Voltar para o login"}</button>
