@@ -154,6 +154,7 @@ function App() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountMessage, setAccountMessage] = useState("");
+  const [accountSessions, setAccountSessions] = useState(null);
   const previousMatchStates = useRef(new Map());
   const deliveredAlertIds = useRef(new Set(alerts.map((alert) => alert.id)));
   const [comparePlayerIds, setComparePlayerIds] = useState(["", ""]);
@@ -563,6 +564,21 @@ function App() {
       setAccountLoading(false);
     }
   };
+  const openAccount = () => {
+    setAccountMessage("");
+    setAccountSessions(null);
+    setAccountOpen(true);
+    fetch("/api/account/sessions", { headers: { Authorization: `Bearer ${authToken}` } })
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then(setAccountSessions)
+      .catch(() => setAccountSessions({ count: 0, sessions: [] }));
+  };
+  const revokeOtherSessions = async () => {
+    const response = await fetch("/api/account/sessions/revoke-others", { method: "POST", headers: { Authorization: `Bearer ${authToken}` } });
+    const data = response.ok ? await response.json() : { revoked: 0 };
+    setAccountSessions((current) => current ? { ...current, count: current.sessions.filter((session) => session.current).length, sessions: current.sessions.filter((session) => session.current) } : current);
+    setAccountMessage(data.revoked ? `${data.revoked} outra(s) sessão(ões) encerrada(s).` : "Nenhuma outra sessão estava conectada.");
+  };
   const liveCount = (events?.matches || []).filter(
     (match) => match.tour === tour && match.state === "in"
   ).length;
@@ -597,7 +613,7 @@ function App() {
           <span>Atualizado em {formatUpdated(tourData?.lastUpdated || payload?.generatedAt)}</span>
           <div className="header-actions">
             {currentUser && <button className="notification-button" type="button" aria-label="Abrir notificações" onClick={toggleNotifications}>🔔{unreadAlerts > 0 && <b>{unreadAlerts}</b>}</button>}
-            {currentUser ? <button className="account-button signed-in" type="button" onClick={() => { setAccountMessage(""); setAccountOpen(true); }}><span>{currentUser.name.slice(0, 1).toUpperCase()}</span><b>{currentUser.name}</b><small>Minha conta</small></button> : <button className="account-button" type="button" onClick={() => { setAuthMode("login"); setAuthError(""); setAuthOpen(true); }}>Entrar</button>}
+            {currentUser ? <button className="account-button signed-in" type="button" onClick={openAccount}><span>{currentUser.name.slice(0, 1).toUpperCase()}</span><b>{currentUser.name}</b><small>Minha conta</small></button> : <button className="account-button" type="button" onClick={() => { setAuthMode("login"); setAuthError(""); setAuthOpen(true); }}>Entrar</button>}
           </div>
         </div>
       </header>
@@ -635,6 +651,12 @@ function App() {
             <div className="notification-preferences">
               <div className="password-section"><strong>Notificações de favoritos</strong><small>Escolha quais acontecimentos devem gerar alertas.</small></div>
               {[["beforeMatch", "30 minutos antes"], ["matchStart", "Início da partida"], ["scheduleChange", "Mudança de horário"], ["matchEnd", "Resultado final"]].map(([key, label]) => <label className="setting-toggle" key={key}><span>{label}</span><input type="checkbox" checked={notificationSettings[key]} onChange={(event) => setNotificationSettings((current) => ({ ...current, [key]: event.target.checked }))} /></label>)}
+            </div>
+            <div className="session-section">
+              <div className="password-section"><strong>Sessões conectadas</strong><small>Dispositivos com acesso à sua conta.</small></div>
+              {!accountSessions && <span className="session-loading">Carregando sessões...</span>}
+              {(accountSessions?.sessions || []).map((session) => <div className="session-row" key={session.id}><span><strong>{session.current ? "Este dispositivo" : "Outro dispositivo"}</strong><small>Último acesso: {formatUpdated(session.lastUsedAt || session.createdAt)}</small></span>{session.current && <b>ATUAL</b>}</div>)}
+              {accountSessions?.count > 1 && <button className="revoke-sessions" type="button" onClick={revokeOtherSessions}>Encerrar outros dispositivos</button>}
             </div>
             <form className="auth-form account-form" onSubmit={submitAccount}>
               <label><span>Nome</span><input name="name" required minLength="2" defaultValue={currentUser.name} autoComplete="name" /></label>

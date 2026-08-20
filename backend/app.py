@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, Header, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 
@@ -87,6 +87,13 @@ def _initialize_auth_tables() -> None:
                 created_at TEXT NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             );
+            CREATE TABLE IF NOT EXISTS login_attempts (
+                attempt_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL COLLATE NOCASE,
+                ip_address TEXT NOT NULL,
+                failed_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_login_attempts_lookup ON login_attempts(email, ip_address, failed_at);
             CREATE TABLE IF NOT EXISTS user_preferences (
                 user_id TEXT PRIMARY KEY,
                 favorite_player_ids_json TEXT NOT NULL DEFAULT '[]',
@@ -100,6 +107,13 @@ def _initialize_auth_tables() -> None:
         preference_columns = {row[1] for row in connection.execute("PRAGMA table_info(user_preferences)").fetchall()}
         if "notification_settings_json" not in preference_columns:
             connection.execute("ALTER TABLE user_preferences ADD COLUMN notification_settings_json TEXT NOT NULL DEFAULT '{}' ")
+        session_columns = {row[1] for row in connection.execute("PRAGMA table_info(user_sessions)").fetchall()}
+        if "user_agent" not in session_columns:
+            connection.execute("ALTER TABLE user_sessions ADD COLUMN user_agent TEXT")
+        if "ip_address" not in session_columns:
+            connection.execute("ALTER TABLE user_sessions ADD COLUMN ip_address TEXT")
+        if "last_used_at" not in session_columns:
+            connection.execute("ALTER TABLE user_sessions ADD COLUMN last_used_at TEXT")
         connection.commit()
     finally:
         connection.close()
@@ -126,13 +140,13 @@ def _token_hash(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
-def _new_session(connection: sqlite3.Connection, user_id: str) -> tuple[str, str]:
+def _new_session(connection: sqlite3.Connection, user_id: str, request: Optional[Request] = None) -> tuple[str, str]:
     token = secrets.token_urlsafe(32)
     now = datetime.now(timezone.utc)
     expires_at = now + timedelta(days=30)
     connection.execute(
-        "INSERT INTO user_sessions (token_hash, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)",
-        (_token_hash(token), user_id, expires_at.isoformat(), now.isoformat()),
+        "INSERT INTO user_sessions (token_hash, user_id, expires_at, created_at, user_agent, ip_address, last_used_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (_token_hash(token), user_id, expires_at.isoformat(), now.isoformat(), request.headers.get("user-agent", "")[:300] if request else "", request.client.host if request and request.client else "", now.isoformat()),
     )
     return token, expires_at.isoformat()
 
@@ -152,6 +166,9 @@ def _authenticated_user(authorization: Optional[str]) -> dict:
             """,
             (_token_hash(token), datetime.now(timezone.utc).isoformat()),
         ).fetchone()
+        if row:
+            connection.execute("UPDATE user_sessions SET last_used_at = ? WHERE token_hash = ?", (datetime.now(timezone.utc).isoformat(), _token_hash(token)))
+            connection.commit()
     finally:
         connection.close()
     if not row:
@@ -183,7 +200,7 @@ def health() -> dict:
 
 
 @app.post("/api/auth/register", tags=["Conta"], status_code=201)
-def register(payload: RegisterPayload) -> dict:
+def register(payload: RegisterPayload, request: Request) -> dict:
     connection = sqlite3.connect(HISTORY_DB_PATH)
     connection.row_factory = sqlite3.Row
     user_id = secrets.token_urlsafe(12)
@@ -193,7 +210,7 @@ def register(payload: RegisterPayload) -> dict:
             "INSERT INTO users (user_id, name, email, password_hash, created_at) VALUES (?, ?, ?, ?, ?)",
             (user_id, payload.name.strip(), payload.email, _password_hash(payload.password), now),
         )
-        token, expires_at = _new_session(connection, user_id)
+        token, expires_at = _new_session(connection, user_id, request)
         connection.commit()
     except sqlite3.IntegrityError as exc:
         raise HTTPException(status_code=409, detail="Já existe uma conta com este e-mail.") from exc
@@ -203,17 +220,27 @@ def register(payload: RegisterPayload) -> dict:
 
 
 @app.post("/api/auth/login", tags=["Conta"])
-def login(payload: LoginPayload) -> dict:
+def login(payload: LoginPayload, request: Request) -> dict:
     connection = sqlite3.connect(HISTORY_DB_PATH)
     connection.row_factory = sqlite3.Row
     try:
+        ip_address = request.client.host if request.client else "unknown"
+        cutoff = (datetime.now(timezone.utc) - timedelta(minutes=15)).isoformat()
+        connection.execute("DELETE FROM login_attempts WHERE failed_at < ?", (cutoff,))
+        failures = connection.execute("SELECT COUNT(*) FROM login_attempts WHERE email = ? AND ip_address = ? AND failed_at >= ?", (payload.email, ip_address, cutoff)).fetchone()[0]
+        if failures >= 5:
+            connection.commit()
+            raise HTTPException(status_code=429, detail="Muitas tentativas. Aguarde 15 minutos antes de tentar novamente.")
         user = connection.execute(
             "SELECT user_id, name, email, password_hash FROM users WHERE email = ? COLLATE NOCASE",
             (payload.email,),
         ).fetchone()
         if not user or not _password_matches(payload.password, user["password_hash"]):
+            connection.execute("INSERT INTO login_attempts (email, ip_address, failed_at) VALUES (?, ?, ?)", (payload.email, ip_address, datetime.now(timezone.utc).isoformat()))
+            connection.commit()
             raise HTTPException(status_code=401, detail="E-mail ou senha incorretos.")
-        token, expires_at = _new_session(connection, user["user_id"])
+        connection.execute("DELETE FROM login_attempts WHERE email = ? AND ip_address = ?", (payload.email, ip_address))
+        token, expires_at = _new_session(connection, user["user_id"], request)
         connection.commit()
     finally:
         connection.close()
@@ -236,6 +263,36 @@ def logout(authorization: Optional[str] = Header(default=None)) -> None:
             connection.commit()
         finally:
             connection.close()
+
+
+@app.get("/api/account/sessions", tags=["Conta"])
+def account_sessions(authorization: Optional[str] = Header(default=None)) -> dict:
+    user = _authenticated_user(authorization)
+    current_hash = _token_hash(authorization.removeprefix("Bearer ").strip())
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    connection.row_factory = sqlite3.Row
+    try:
+        rows = connection.execute(
+            "SELECT token_hash, created_at, expires_at, last_used_at, user_agent, ip_address FROM user_sessions WHERE user_id = ? AND expires_at > ? ORDER BY last_used_at DESC",
+            (user["user_id"], datetime.now(timezone.utc).isoformat()),
+        ).fetchall()
+    finally:
+        connection.close()
+    return {"count": len(rows), "sessions": [{"id": row["token_hash"][:12], "current": row["token_hash"] == current_hash, "createdAt": row["created_at"], "expiresAt": row["expires_at"], "lastUsedAt": row["last_used_at"], "device": row["user_agent"] or "Dispositivo não identificado", "ipAddress": row["ip_address"] or "—"} for row in rows]}
+
+
+@app.post("/api/account/sessions/revoke-others", tags=["Conta"])
+def revoke_other_sessions(authorization: Optional[str] = Header(default=None)) -> dict:
+    user = _authenticated_user(authorization)
+    current_hash = _token_hash(authorization.removeprefix("Bearer ").strip())
+    connection = sqlite3.connect(HISTORY_DB_PATH)
+    try:
+        cursor = connection.execute("DELETE FROM user_sessions WHERE user_id = ? AND token_hash <> ?", (user["user_id"], current_hash))
+        connection.commit()
+        revoked = cursor.rowcount
+    finally:
+        connection.close()
+    return {"revoked": revoked}
 
 
 @app.get("/api/account/preferences", tags=["Conta"])

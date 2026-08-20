@@ -87,6 +87,8 @@ beforeEach(() => {
     if (String(url).includes('/api/auth/register')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ token: 'new-session-token', user: { id: 'user-2', name: 'Beatriz', email: 'beatriz@example.com' } }) });
     if (String(url).includes('/api/auth/logout')) return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
     if (String(url).includes('/api/auth/me')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ user: { id: 'user-1', name: 'Bia', email: 'bia@example.com' } }) });
+    if (String(url).includes('/api/account/sessions/revoke-others')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ revoked: 1 }) });
+    if (String(url).includes('/api/account/sessions')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ count: 2, sessions: [{ id: 'current', current: true, createdAt: '2026-08-20T10:00:00Z', lastUsedAt: '2026-08-20T12:00:00Z' }, { id: 'other', current: false, createdAt: '2026-08-19T10:00:00Z', lastUsedAt: '2026-08-19T12:00:00Z' }] }) });
     if (String(url).includes('/api/account/preferences') && options.method === 'POST') return Promise.resolve({ ok: true, json: () => Promise.resolve({ saved: true }) });
     if (String(url).includes('/api/account/preferences')) return Promise.resolve({ ok: true, json: () => Promise.resolve(accountPreferences) });
     if (String(url).includes('/api/account/profile')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ saved: true, passwordChanged: true, user: { id: 'user-1', name: 'Beatriz', email: 'bia@example.com' } }) });
@@ -161,6 +163,18 @@ test('saves notification preferences for the account', async () => {
     method: 'POST',
     body: expect.stringContaining('"beforeMatch":false'),
   })));
+});
+
+test('lists active sessions and revokes other devices', async () => {
+  window.localStorage.setItem('tennisAuthToken', 'session-token');
+  render(<App />);
+  fireEvent.click(await screen.findByRole('button', { name: /Bia.*Minha conta/i }));
+
+  expect(await screen.findByText('Este dispositivo')).toBeInTheDocument();
+  expect(screen.getByText('Outro dispositivo')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Encerrar outros dispositivos' }));
+  expect(await screen.findByText('1 outra(s) sessão(ões) encerrada(s).')).toBeInTheDocument();
+  expect(screen.queryByText('Outro dispositivo')).not.toBeInTheDocument();
 });
 
 test('switches from login to account registration', async () => {
