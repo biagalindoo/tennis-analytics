@@ -22,3 +22,4 @@ Thumbs.db
 
 # Dados locais
 data/*.csv
+data/athlete_cache.json
